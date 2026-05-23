@@ -9,6 +9,7 @@ export interface IQuestionTypeInput {
 }
 
 export interface IQuestion {
+  questionNumber: number;
   text: string;
   difficulty: Difficulty;
   marks: number;
@@ -18,6 +19,7 @@ export interface IQuestion {
 export interface ISection {
   title: string;
   instruction: string;
+  totalMarks: number;
   questions: IQuestion[];
 }
 

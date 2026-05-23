@@ -21,6 +21,7 @@ const QuestionTypeSchema = new Schema<IQuestionTypeInput>(
 
 const QuestionSchema = new Schema<IQuestion>(
   {
+    questionNumber: { type: Number, required: true },
     text: { type: String, required: true },
     difficulty: {
       type: String,
@@ -37,6 +38,7 @@ const SectionSchema = new Schema<ISection>(
   {
     title: { type: String, required: true },
     instruction: { type: String, required: true },
+    totalMarks: { type: Number, required: true },
     questions: { type: [QuestionSchema], required: true },
   },
   { _id: false },
