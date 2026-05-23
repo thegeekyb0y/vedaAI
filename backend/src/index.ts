@@ -5,10 +5,10 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import { connectDB } from "./config/db";
-// import assignmentRoutes from "./routes/assignment.route";
-// import uploadRoutes from "./routes/upload.route";
-// import { errorHandler } from "./middlewares/errorHandler";
-// import "./queues/assignmentWorker";
+import assignmentRoutes from "./routes/assignment.route";
+import uploadRoutes from "./routes/upload.route";
+import { errorHandler } from "./middlewares/errorHandler";
+import "./queues/assignmentWorker";
 import { redis } from "./config/redis";
 
 const app = express();
@@ -27,8 +27,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // // Routes
-// app.use("/api/assignments", assignmentRoutes);
-// app.use("/api", uploadRoutes);
+app.use("/api/assignments", assignmentRoutes);
+app.use("/api", uploadRoutes);
 
 // Health check
 app.get("/health", (req, res) => {
@@ -43,7 +43,7 @@ io.on("connection", (socket) => {
 });
 
 // // Error handler — always last
-// app.use(errorHandler);
+app.use(errorHandler);
 
 // Boot
 const start = async () => {
