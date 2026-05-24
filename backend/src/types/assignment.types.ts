@@ -1,5 +1,4 @@
 export type Difficulty = "Easy" | "Moderate" | "Challenging";
-
 export type AssignmentStatus = "pending" | "processing" | "done" | "failed";
 
 export interface IQuestionTypeInput {
@@ -27,6 +26,16 @@ export interface IGeneratedPaper {
   sections: ISection[];
 }
 
+export interface IPaperMeta {
+  schoolName: string;
+  subject: string;
+  className: string;
+  section: string;
+  timeAllowed: string;
+  maxMarks: string;
+  instructions: string;
+}
+
 export interface IAssignment {
   _id: string;
   title: string;
@@ -34,6 +43,7 @@ export interface IAssignment {
   questionTypes: IQuestionTypeInput[];
   additionalInstructions?: string;
   fileUrl?: string;
+  paperMeta?: IPaperMeta;
   status: AssignmentStatus;
   result?: IGeneratedPaper;
   createdAt: Date;

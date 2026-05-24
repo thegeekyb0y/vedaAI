@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 import {
   IAssignment,
   IGeneratedPaper,
+  IPaperMeta,
   IQuestion,
   IQuestionTypeInput,
   ISection,
@@ -51,6 +52,19 @@ const GeneratedPaperSchema = new Schema<IGeneratedPaper>(
   { _id: false },
 );
 
+const PaperMetaSchema = new Schema<IPaperMeta>(
+  {
+    schoolName: { type: String, default: "" },
+    subject: { type: String, default: "" },
+    className: { type: String, default: "" },
+    section: { type: String, default: "" },
+    timeAllowed: { type: String, default: "" },
+    maxMarks: { type: String, default: "" },
+    instructions: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
 const AssignmentSchema = new Schema<IAssignmentDocument>(
   {
     title: { type: String, required: true },
@@ -58,6 +72,7 @@ const AssignmentSchema = new Schema<IAssignmentDocument>(
     questionTypes: { type: [QuestionTypeSchema], required: true },
     additionalInstructions: { type: String, default: "" },
     fileUrl: { type: String, default: "" },
+    paperMeta: { type: PaperMetaSchema, default: null },
     status: {
       type: String,
       enum: ["pending", "processing", "done", "failed"],

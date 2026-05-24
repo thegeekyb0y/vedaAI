@@ -9,8 +9,14 @@ const router = Router();
 router.post(
   "/",
   asyncHandler(async (req: Request, res: Response): Promise<void> => {
-    const { title, dueDate, questionTypes, additionalInstructions, fileUrl } =
-      req.body;
+    const {
+      title,
+      dueDate,
+      questionTypes,
+      additionalInstructions,
+      fileUrl,
+      paperMeta, // ← added
+    } = req.body;
 
     const assignment = await Assignment.create({
       title,
@@ -18,6 +24,7 @@ router.post(
       questionTypes,
       additionalInstructions,
       fileUrl,
+      paperMeta, // ← added
     });
 
     await addGenerationJob(assignment._id.toString());
