@@ -26,7 +26,7 @@ app.use(cors({ origin: env.CLIENT_URL }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// // Routes
+// Routes
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api", uploadRoutes);
 
@@ -42,16 +42,45 @@ io.on("connection", (socket) => {
   });
 });
 
-// // Error handler — always last
+// Error handler — always last
 app.use(errorHandler);
 
-// Boot
-const start = async () => {
-  await connectDB();
-  await redis.ping(); // confirms redis is connected before starting
-  httpServer.listen(env.PORT, () => {
-    console.log(`Server running on port ${env.PORT}`);
-  });
+// Database connection lazy-loader wrapper for serverless execution environments
+let isConnected = false;
+const middlewareDBCheck = async () => {
+  if (!isConnected) {
+    await connectDB();
+    try {
+      await redis.ping();
+    } catch (e) {
+      console.warn("Redis ping failed in serverless context:", e);
+    }
+    isConnected = true;
+  }
 };
 
-start();
+// Intercept serverless calls to ensure database state hydration
+app.use(async (req, res, next) => {
+  await middlewareDBCheck();
+  next();
+});
+
+// Only start the standalone standalone HTTP listener loop if running LOCALLY
+if (process.env.NODE_ENV !== "production") {
+  const start = async () => {
+    await connectDB();
+    try {
+      await redis.ping();
+      console.log("Redis connection established successfully.");
+    } catch (err) {
+      console.error("Redis fallback warning:", err);
+    }
+    httpServer.listen(env.PORT, () => {
+      console.log(`Server running locally on port ${env.PORT}`);
+    });
+  };
+  start();
+}
+
+// CRITICAL FOR VERCEL: Export the base app instance
+export default app;
