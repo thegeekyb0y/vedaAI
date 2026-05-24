@@ -1,20 +1,19 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
 import { asyncHandler } from "../middlewares/asyncHandler";
 
 const router = Router();
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, "uploads/"),
-  filename: (_req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${unique}${path.extname(file.originalname)}`);
-  },
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
+// Use memory storage — buffer goes straight to Cloudinary, nothing hits disk
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowed = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
@@ -32,9 +31,22 @@ router.post(
       res.status(400).json({ success: false, message: "No file uploaded" });
       return;
     }
-    res.status(201).json({
-      fileUrl: `/uploads/${req.file.filename}`,
-    });
+
+    // Upload buffer to Cloudinary
+    const result = await new Promise<{ secure_url: string }>(
+      (resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "veda-uploads" },
+          (error, result) => {
+            if (error || !result) return reject(error);
+            resolve(result);
+          },
+        );
+        stream.end(req.file!.buffer);
+      },
+    );
+
+    res.status(201).json({ fileUrl: result.secure_url });
   }),
 );
 
