@@ -1,40 +1,40 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
 import Image from "next/image";
+import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 
 export const EmptyState = () => {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col items-center justify-center h-[calc(100vh-56px)] select-none">
+    <section className="mx-auto flex min-h-[calc(100vh-120px)] max-w-[1100px] flex-col items-center justify-center px-6 text-center">
       <Image
-        src="/emptystate.svg"
+        src="/Illustrations.svg"
         alt="No assignments"
-        width={220}
-        height={220}
+        width={300}
+        height={300}
         priority
-        draggable={false}
+        className="h-[220px] w-[220px] md:h-[260px] md:w-[260px] lg:h-[300px] lg:w-[300px]"
       />
 
-      <h2 className="text-[16px] font-semibold text-[#111111] mt-5 mb-2">
+      <h2 className="mt-10 text-[28px] font-semibold leading-[40px] text-primary">
         No assignments yet
       </h2>
-
-      <p className="text-[13px] text-[#6B6B6B] text-center max-w-[300px] leading-relaxed mb-7">
+      <p className="mt-3 max-w-[486px] text-[16px] leading-[1.45] text-secondary">
         Create your first assignment to start collecting and grading student
         submissions. You can set up rubrics, define marking criteria, and let AI
         assist with grading.
       </p>
 
-      <button
+      <Button
+        className="mt-10 h-16 rounded-full bg-[#1f1f1f] px-9 text-[18px] font-medium text-white shadow-[0_12px_24px_rgba(0,0,0,0.18)] hover:bg-[#181818]"
         onClick={() => router.push("/assignments/create")}
-        className="flex items-center gap-2 bg-[#1A1A1A] text-white text-[13px] font-semibold px-6 py-2.5 rounded-full hover:bg-[#2a2a2a] transition-colors"
+        iconLeft={<Plus size={22} />}
       >
-        <Plus size={14} strokeWidth={2.5} />
         Create Your First Assignment
-      </button>
-    </div>
+      </Button>
+    </section>
   );
 };

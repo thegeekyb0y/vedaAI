@@ -1,96 +1,116 @@
 "use client";
 
-import { useAssignmentFormStore } from "@/store/assignmentForm.store";
-import { X } from "lucide-react";
+import { FieldErrors, UseFieldArrayRemove, UseFormRegister, UseFormSetValue } from "react-hook-form";
+import { Trash2 } from "lucide-react";
+import { Counter } from "@/components/ui/Counter";
+import { QUESTION_TYPE_OPTIONS } from "@/features/assignments/constants";
+import { AssignmentCreateFormInput } from "@/features/assignments/form-schema";
 
-const QUESTION_TYPES = [
-  "Multiple Choice Questions",
-  "Short Answer Questions",
-  "Long Answer Questions",
-  "Diagram/Graph-Based Questions",
-  "Numerical Problems",
-  "True or False",
-  "Fill in the Blanks",
-];
-
-interface Props {
+interface QuestionTypeRowProps {
   index: number;
+  canRemove: boolean;
+  errors?: FieldErrors<AssignmentCreateFormInput>["questionTypes"];
+  marks: number;
+  noOfQuestions: number;
+  register: UseFormRegister<AssignmentCreateFormInput>;
+  remove: UseFieldArrayRemove;
+  setValue: UseFormSetValue<AssignmentCreateFormInput>;
 }
 
-export const QuestionTypeRow = ({ index }: Props) => {
-  const { questionTypes, updateQuestionType, removeQuestionType } =
-    useAssignmentFormStore();
-  const qt = questionTypes[index];
-  if (!qt) return null;
-
-  const increment = (key: "noOfQuestions" | "marks") => {
-    updateQuestionType(index, key, qt[key] + 1);
-  };
-
-  const decrement = (key: "noOfQuestions" | "marks") => {
-    if (qt[key] <= 1) return;
-    updateQuestionType(index, key, qt[key] - 1);
-  };
+export const QuestionTypeRow = ({
+  canRemove,
+  errors,
+  index,
+  marks,
+  noOfQuestions,
+  register,
+  remove,
+  setValue,
+}: QuestionTypeRowProps) => {
+  const rowErrors = errors?.[index];
 
   return (
-    <div className="grid grid-cols-[1fr,auto,auto] gap-2 items-center">
-      {/* Dropdown */}
-      <div className="flex items-center gap-2 border border-[#E5E5E5] rounded-lg px-3 py-2 bg-white">
-        <select
-          value={qt.type}
-          onChange={(e) => updateQuestionType(index, "type", e.target.value)}
-          className="flex-1 text-xs text-[#111111] outline-none bg-transparent cursor-pointer"
-        >
-          {QUESTION_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={() => removeQuestionType(index)}
-          className="text-[#9CA3AF] hover:text-red-500 transition-colors ml-1"
-        >
-          <X size={13} />
-        </button>
-      </div>
+    <div className="rounded-[28px] border border-(--color-border) bg-white p-4 shadow-(--shadow-soft)">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_150px_130px_auto] xl:items-start">
+        <div className="space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-[0.14em] text-(--color-muted)">
+            Question Type
+          </label>
+          <select
+            {...register(`questionTypes.${index}.type`)}
+            className="h-12 w-full rounded-2xl border border-(--color-border) bg-(--color-surface-raised) px-4 text-sm text-(--color-primary) outline-none transition-colors focus:border-(--color-primary)"
+          >
+            {QUESTION_TYPE_OPTIONS.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+          {rowErrors?.type ? (
+            <p className="text-sm text-(--color-danger)">{rowErrors.type.message}</p>
+          ) : null}
+        </div>
 
-      {/* No. of Questions Counter */}
-      <div className="flex items-center gap-1 border border-[#E5E5E5] rounded-lg px-2 py-2 bg-white w-24 justify-between">
-        <button
-          onClick={() => decrement("noOfQuestions")}
-          className="w-5 h-5 flex items-center justify-center text-[#6B6B6B] hover:text-[#111111] font-bold text-sm"
-        >
-          −
-        </button>
-        <span className="text-xs font-medium text-[#111111] w-4 text-center">
-          {qt.noOfQuestions}
-        </span>
-        <button
-          onClick={() => increment("noOfQuestions")}
-          className="w-5 h-5 flex items-center justify-center text-[#6B6B6B] hover:text-[#111111] font-bold text-sm"
-        >
-          +
-        </button>
-      </div>
+        <div className="space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-[0.14em] text-(--color-muted)">
+            Questions
+          </label>
+          <input
+            type="hidden"
+            {...register(`questionTypes.${index}.noOfQuestions`, {
+              valueAsNumber: true,
+            })}
+          />
+          <Counter
+            value={noOfQuestions}
+            onChange={(next) =>
+              setValue(`questionTypes.${index}.noOfQuestions`, next, {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+          />
+          {rowErrors?.noOfQuestions ? (
+            <p className="text-sm text-(--color-danger)">
+              {rowErrors.noOfQuestions.message}
+            </p>
+          ) : null}
+        </div>
 
-      {/* Marks Counter */}
-      <div className="flex items-center gap-1 border border-[#E5E5E5] rounded-lg px-2 py-2 bg-white w-20 justify-between">
-        <button
-          onClick={() => decrement("marks")}
-          className="w-5 h-5 flex items-center justify-center text-[#6B6B6B] hover:text-[#111111] font-bold text-sm"
-        >
-          −
-        </button>
-        <span className="text-xs font-medium text-[#111111] w-4 text-center">
-          {qt.marks}
-        </span>
-        <button
-          onClick={() => increment("marks")}
-          className="w-5 h-5 flex items-center justify-center text-[#6B6B6B] hover:text-[#111111] font-bold text-sm"
-        >
-          +
-        </button>
+        <div className="space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-[0.14em] text-(--color-muted)">
+            Marks
+          </label>
+          <input
+            type="hidden"
+            {...register(`questionTypes.${index}.marks`, {
+              valueAsNumber: true,
+            })}
+          />
+          <Counter
+            value={marks}
+            onChange={(next) =>
+              setValue(`questionTypes.${index}.marks`, next, {
+                shouldDirty: true,
+                shouldValidate: true,
+              })
+            }
+          />
+          {rowErrors?.marks ? (
+            <p className="text-sm text-(--color-danger)">{rowErrors.marks.message}</p>
+          ) : null}
+        </div>
+
+        <div className="flex items-end">
+          <button
+            type="button"
+            onClick={() => remove(index)}
+            disabled={!canRemove}
+            className="flex h-12 w-12 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-raised) text-(--color-secondary) transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-(--color-danger) disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );
