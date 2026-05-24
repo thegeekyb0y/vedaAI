@@ -1,15 +1,13 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
-import { FileText, ImageIcon, UploadCloud } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { UploadCloud } from "lucide-react";
 
 interface FileUploadProps {
   accept?: string;
   disabled?: boolean;
   error?: string;
   fileName?: string;
-  helperText?: string;
   isUploaded?: boolean;
   progress?: number;
   statusText?: string;
@@ -21,10 +19,8 @@ export const FileUpload = ({
   disabled = false,
   error,
   fileName,
-  helperText = "JPEG, PNG, PDF up to 10MB",
   isUploaded = false,
   progress,
-  statusText,
   onFileSelect,
 }: FileUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -46,77 +42,77 @@ export const FileUpload = ({
     event.target.value = "";
   };
 
+  const isUploading = typeof progress === "number" && !isUploaded;
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
+      {/* Drop zone */}
       <div
         role="button"
         tabIndex={disabled ? -1 : 0}
         onClick={() => !disabled && inputRef.current?.click()}
-        onDragOver={(event) => {
-          event.preventDefault();
+        onDragOver={(e) => {
+          e.preventDefault();
           if (!disabled) setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={onDrop}
-        className={`rounded-[28px] border-2 border-dashed px-6 py-8 text-center transition-all ${isDragging ? "border-(--color-primary) bg-white shadow-(--shadow-card)" : "border-(--color-border-strong) bg-(--color-surface-raised)"} ${disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer hover:border-(--color-primary) hover:bg-white"}`}
+        className={`rounded-[20px] border-2 border-dashed py-10 text-center transition-all ${
+          isDragging
+            ? "border-primary bg-white"
+            : "border-[#d5d5d5] bg-[#f5f5f5]"
+        } ${disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
       >
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-(--shadow-soft)">
-          <UploadCloud size={24} className="text-(--color-primary)" />
+        {/* Icon */}
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm">
+          <UploadCloud size={22} className="text-primary" />
         </div>
 
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-(--color-primary)">
-            {statusText ?? "Choose a file or drag and drop it here"}
-          </p>
-          <p className="text-sm text-(--color-muted)">{helperText}</p>
-        </div>
+        {/* Text */}
+        <p className="text-sm font-semibold text-primary">
+          {isUploading
+            ? `Uploading... ${progress}%`
+            : isUploaded && fileName
+              ? fileName
+              : "Choose a file or drag & drop it here"}
+        </p>
+        <p className="mt-1 text-sm text-muted">JPEG, PNG, upto 10MB</p>
 
-        <div className="mt-5 flex items-center justify-center gap-3">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-(--color-secondary) shadow-(--shadow-soft)">
-            <FileText size={16} />
-            PDF
-          </span>
-          <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-(--color-secondary) shadow-(--shadow-soft)">
-            <ImageIcon size={16} />
-            Image
-          </span>
-        </div>
-
-        <div className="mt-5">
-          <Button variant="secondary" size="sm" disabled={disabled}>
-            Browse Files
-          </Button>
-        </div>
-
-        {typeof progress === "number" ? (
-          <div className="mx-auto mt-5 max-w-sm">
-            <div className="h-2 overflow-hidden rounded-full bg-(--color-border)">
+        {/* Progress bar while uploading */}
+        {isUploading && (
+          <div className="mx-auto mt-4 max-w-xs px-6">
+            <div className="h-1.5 overflow-hidden rounded-full bg-border">
               <div
-                className="h-full rounded-full bg-(--color-primary) transition-all"
+                className="h-full rounded-full bg-primary transition-all"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="mt-2 text-xs font-medium text-(--color-secondary)">
-              Uploading... {progress}%
-            </p>
           </div>
-        ) : null}
+        )}
 
-        {fileName ? (
-          <div className="mt-5 rounded-2xl border border-(--color-border) bg-white px-4 py-3 text-left shadow-(--shadow-soft)">
-            <p className="truncate text-sm font-medium text-(--color-primary)">
-              {fileName}
-            </p>
-            <p
-              className={`mt-1 text-xs ${isUploaded ? "text-(--color-success-strong)" : "text-(--color-muted)"}`}
-            >
-              {isUploaded ? "File uploaded successfully" : "Selected file"}
-            </p>
+        {/* Browse / Replace button */}
+        {!isUploading && (
+          <div className="mt-5">
+            <span className="inline-flex items-center rounded-full border border-border bg-white px-5 py-2 text-sm font-medium text-primary">
+              {isUploaded ? "Replace File" : "Browse Files"}
+            </span>
           </div>
-        ) : null}
+        )}
+
+        {/* Uploaded checkmark */}
+        {isUploaded && fileName && (
+          <p className="mt-2 text-xs text-emerald-600">
+            ✓ Uploaded successfully
+          </p>
+        )}
       </div>
 
-      {error ? <p className="text-sm text-(--color-danger)">{error}</p> : null}
+      {/* Caption outside the box */}
+      <p className="text-center text-xs text-muted">
+        Upload images of your preferred document/image
+      </p>
+
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       <input
         ref={inputRef}

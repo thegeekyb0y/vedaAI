@@ -1,137 +1,171 @@
-import { DifficultyBadge } from "@/components/assignments/DifficultyBadge";
-import { formatAssignmentDate, getAssignmentTotals } from "@/features/assignments/utils";
-import { IAssignment, IQuestion, ISection } from "@/types/assignment.types";
+import { Download } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { getAssignmentTotals } from "@/features/assignments/utils";
+import {
+  IAssignment,
+  IQuestion,
+  ISection,
+  PaperMeta,
+} from "@/types/assignment.types";
 
 interface AssignmentPaperProps {
   assignment: IAssignment;
 }
 
-const PaperQuestion = ({ question }: { question: IQuestion }) => (
-  <div className="rounded-[22px] border border-(--color-border) bg-(--color-surface-raised) p-4">
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-      <div className="flex gap-3">
-        <span className="mt-0.5 min-w-6 text-sm font-semibold text-(--color-primary)">
-          {question.questionNumber}.
-        </span>
-        <p className="text-sm leading-7 text-(--color-primary)">{question.text}</p>
-      </div>
-      <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-        <DifficultyBadge difficulty={question.difficulty} />
-        <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-(--color-secondary) shadow-(--shadow-soft)">
-          {question.marks} marks
-        </span>
-      </div>
-    </div>
-  </div>
+const PaperQuestion = ({
+  question,
+  globalNumber,
+}: {
+  question: IQuestion;
+  globalNumber: number;
+}) => (
+  <li value={globalNumber} className="text-[15px] leading-8 text-primary">
+    [{question.difficulty}] {question.text} [{question.marks} Marks]
+  </li>
 );
 
-const PaperSection = ({ section }: { section: ISection }) => (
-  <section className="space-y-4 rounded-[30px] border border-(--color-border) bg-white p-5 shadow-(--shadow-soft) sm:p-6">
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <h2 className="text-xl font-semibold text-(--color-primary)">{section.title}</h2>
-        <p className="mt-2 text-sm leading-6 text-(--color-secondary)">
-          {section.instruction}
-        </p>
-      </div>
-      <span className="inline-flex rounded-full border border-(--color-border) bg-(--color-surface-raised) px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-(--color-muted)">
-        {section.totalMarks} marks
-      </span>
+const PaperSection = ({
+  section,
+  startNumber,
+}: {
+  section: ISection;
+  startNumber: number;
+}) => (
+  <section className="mt-10">
+    <h3 className="text-center text-[22px] font-semibold text-primary">
+      {section.title}
+    </h3>
+
+    <div className="mt-8">
+      <h4 className="text-[16px] font-semibold text-primary">
+        {section.instruction}
+      </h4>
+      <p className="mt-1 text-[14px] italic text-primary/75">
+        Attempt all questions. Each question carries{" "}
+        {section.questions[0]?.marks ?? 0} marks
+      </p>
     </div>
 
-    <div className="space-y-3">
-      {section.questions.map((question) => (
+    <ol
+      start={startNumber}
+      className="mt-6 space-y-3 pl-6 list-decimal marker:text-primary"
+    >
+      {section.questions.map((question, i) => (
         <PaperQuestion
           key={`${section.title}-${question.questionNumber}`}
           question={question}
+          globalNumber={startNumber + i}
         />
       ))}
-    </div>
+    </ol>
   </section>
 );
 
 export const AssignmentPaper = ({ assignment }: AssignmentPaperProps) => {
   const paper = assignment.result;
+  const meta = assignment.paperMeta;
 
   if (!paper) return null;
 
-  const { totalMarks, totalQuestions } = getAssignmentTotals(paper);
+  const { totalMarks } = getAssignmentTotals(paper);
+
+  // Compute start index for each section so numbering is continuous
+  const sectionStarts: number[] = [];
+  let counter = 1;
+  for (const section of paper.sections) {
+    sectionStarts.push(counter);
+    counter += section.questions.length;
+  }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[34px] bg-(--color-primary) p-6 text-white shadow-[0_30px_60px_rgba(17,17,17,0.22)] sm:p-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/65">
-          AI Output
-        </p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-          {assignment.title}
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-white/75">
-          Your assignment has been generated and grouped into structured sections
-          with difficulty labels, marks, and answer guidance for each question.
+    <div className="space-y-5">
+      {/* AI intro card */}
+      <section className="rounded-[34px] bg-[#272727] px-7 py-8 text-white print:hidden shadow-[0_20px_40px_rgba(0,0,0,0.18)]">
+        <p className="max-w-4xl text-[18px] font-semibold leading-8">
+          Here is your customized question paper for{" "}
+          <span className="text-orange-400">{assignment.title}</span> based on
+          the uploaded requirements:
         </p>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[24px] border border-white/10 bg-white/6 p-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-white/60">Due Date</p>
-            <p className="mt-2 text-sm font-semibold">{formatAssignmentDate(assignment.dueDate)}</p>
-          </div>
-          <div className="rounded-[24px] border border-white/10 bg-white/6 p-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-white/60">Sections</p>
-            <p className="mt-2 text-sm font-semibold">{paper.sections.length}</p>
-          </div>
-          <div className="rounded-[24px] border border-white/10 bg-white/6 p-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-white/60">Questions</p>
-            <p className="mt-2 text-sm font-semibold">{totalQuestions}</p>
-          </div>
-        </div>
+        <Button
+          variant="secondary"
+          className="mt-6 h-12 rounded-full border-0 bg-white px-5 text-[16px] font-medium text-primary hover:bg-white"
+          iconLeft={<Download size={16} />}
+          onClick={() => window.print()}
+        >
+          Download as PDF
+        </Button>
       </section>
 
+      {/* Printable paper */}
       <section
         id="paper"
-        className="rounded-[36px] border border-(--color-border) bg-white p-5 shadow-(--shadow-card) sm:p-8"
+        className="rounded-[34px] bg-white px-7 py-9 text-primary shadow-[0_20px_40px_rgba(0,0,0,0.12)] sm:px-10 sm:py-10"
       >
-        <div className="border-b border-dashed border-(--color-border) pb-6">
-          <p className="text-center text-xs font-semibold uppercase tracking-[0.2em] text-(--color-orange)">
-            Generated Assignment Paper
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-[28px] font-semibold leading-tight text-primary">
+            {meta?.schoolName || "—"}
+          </h1>
+          <p className="mt-2 text-[22px] font-semibold text-primary">
+            Subject: {meta?.subject || assignment.title}
           </p>
-          <h2 className="mt-3 text-center text-2xl font-semibold tracking-tight text-(--color-primary)">
-            {assignment.title}
-          </h2>
-          <div className="mt-5 flex flex-col gap-3 text-sm text-(--color-secondary) sm:flex-row sm:items-center sm:justify-between">
-            <span>Due date: {formatAssignmentDate(assignment.dueDate)}</span>
-            <span>Total marks: {totalMarks}</span>
-          </div>
-          <div className="mt-5 grid gap-3 text-sm text-(--color-secondary) sm:grid-cols-3">
-            <div className="rounded-[18px] bg-(--color-surface-raised) px-4 py-3">Name: ____________________</div>
-            <div className="rounded-[18px] bg-(--color-surface-raised) px-4 py-3">Roll No: ____________________</div>
-            <div className="rounded-[18px] bg-(--color-surface-raised) px-4 py-3">Section: ____________________</div>
-          </div>
+          <p className="mt-1 text-[22px] font-semibold text-primary">
+            Class: {meta?.className || "—"}
+          </p>
         </div>
 
-        <div className="mt-6 space-y-5">
-          {paper.sections.map((section) => (
-            <PaperSection key={section.title} section={section} />
-          ))}
+        {/* Time + Marks */}
+        <div className="mt-12 flex items-start justify-between gap-6 text-[18px] font-semibold text-primary">
+          <p>Time Allowed: {meta?.timeAllowed || "—"}</p>
+          <p>Maximum Marks: {meta?.maxMarks || totalMarks}</p>
         </div>
 
-        <section className="mt-6 rounded-[30px] border border-(--color-border) bg-(--color-surface-raised) p-5">
-          <h3 className="text-lg font-semibold text-(--color-primary)">Answer Key</h3>
-          <div className="mt-4 space-y-3">
-            {paper.sections.flatMap((section) => section.questions).map((question, index) => (
-              <div
-                key={`answer-${question.questionNumber}-${index}`}
-                className="rounded-[20px] bg-white px-4 py-3 shadow-(--shadow-soft)"
-              >
-                <p className="text-sm leading-6 text-(--color-secondary)">
-                  <span className="font-semibold text-(--color-primary)">
-                    {question.questionNumber}.
-                  </span>{" "}
+        {/* Instructions */}
+        {meta?.instructions && (
+          <p className="mt-8 text-[18px] font-semibold text-primary">
+            {meta.instructions}
+          </p>
+        )}
+
+        {/* Student fields */}
+        <div className="mt-8 space-y-2 text-[18px] font-semibold text-primary">
+          <p>Name: ________________</p>
+          <p>Roll Number: ________________</p>
+          <p>
+            Class: {meta?.className || "—"} &nbsp;&nbsp; Section:{" "}
+            {meta?.section ? meta.section : "________________"}
+          </p>
+        </div>
+
+        {/* Sections with continuous numbering */}
+        {paper.sections.map((section, i) => (
+          <PaperSection
+            key={section.title}
+            section={section}
+            startNumber={sectionStarts[i]}
+          />
+        ))}
+
+        <p className="mt-8 text-[16px] font-semibold text-primary">
+          — End of Question Paper —
+        </p>
+
+        {/* Answer key */}
+        <section className="mt-14">
+          <h3 className="text-[28px] font-semibold text-primary">Answer Key</h3>
+          <ol className="mt-6 space-y-4 pl-6 marker:text-primary">
+            {paper.sections
+              .flatMap((s) => s.questions)
+              .map((question, index) => (
+                <li
+                  key={`answer-${question.questionNumber}-${index}`}
+                  className="text-[15px] leading-8 text-primary"
+                >
                   {question.answer}
-                </p>
-              </div>
-            ))}
-          </div>
+                </li>
+              ))}
+          </ol>
         </section>
       </section>
     </div>

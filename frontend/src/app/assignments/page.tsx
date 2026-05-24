@@ -25,12 +25,8 @@ export default function AssignmentsPage() {
   const [refreshing, setRefreshing] = useState(false);
 
   const loadAssignments = async (isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
     try {
       const data = await getAssignments();
       setAssignments(data);
@@ -45,8 +41,7 @@ export default function AssignmentsPage() {
 
   useEffect(() => {
     let isMounted = true;
-
-    const loadInitialAssignments = async () => {
+    const load = async () => {
       try {
         const data = await getAssignments();
         if (!isMounted) return;
@@ -56,14 +51,10 @@ export default function AssignmentsPage() {
         if (!isMounted) return;
         setError(getApiErrorMessage(err, "Failed to load assignments"));
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
-
-    void loadInitialAssignments();
-
+    void load();
     return () => {
       isMounted = false;
     };
@@ -71,18 +62,14 @@ export default function AssignmentsPage() {
 
   const filteredAssignments = useMemo(() => {
     const query = search.trim().toLowerCase();
-
     if (!query) return assignments;
-
-    return assignments.filter((assignment) =>
-      assignment.title.toLowerCase().includes(query),
-    );
+    return assignments.filter((a) => a.title.toLowerCase().includes(query));
   }, [assignments, search]);
 
   const handleDelete = async (id: string) => {
     try {
       await deleteAssignment(id);
-      setAssignments((current) => current.filter((item) => item._id !== id));
+      setAssignments((curr) => curr.filter((item) => item._id !== id));
       toast.success("Assignment deleted");
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to delete assignment"));
@@ -91,9 +78,9 @@ export default function AssignmentsPage() {
 
   const handleRegenerate = async (id: string) => {
     try {
-      const nextAssignment = await regenerateAssignment(id);
-      setAssignments((current) =>
-        current.map((item) => (item._id === id ? nextAssignment : item)),
+      const next = await regenerateAssignment(id);
+      setAssignments((curr) =>
+        curr.map((item) => (item._id === id ? next : item)),
       );
       toast.success("Assignment queued for regeneration");
     } catch (err) {
@@ -139,121 +126,77 @@ export default function AssignmentsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1320px] space-y-6">
-      <section className="rounded-[34px] bg-white p-6 shadow-(--shadow-card) sm:p-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange">
-              Assignment Dashboard
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-primary sm:text-4xl">
-              Create, track, and review assignment generation
-            </h1>
-            <p className="mt-4 text-sm leading-7 text-secondary">
-              Manage the full assignment lifecycle from prompt setup to
-              generated paper review, with polished states for uploads, retries,
-              and final output.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[360px]">
-            <div className="rounded-[26px] border border-border bg-surface-raised p-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-muted">
-                Total Assignments
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-primary">
-                {assignments.length}
-              </p>
-            </div>
-            <div className="rounded-[26px] border border-border bg-surface-raised p-4">
-              <p className="text-xs uppercase tracking-[0.14em] text-muted">
-                Active Jobs
-              </p>
-              <p className="mt-2 text-3xl font-semibold text-primary">
-                {
-                  assignments.filter(
-                    (assignment) =>
-                      assignment.status === "pending" ||
-                      assignment.status === "processing",
-                  ).length
-                }
-              </p>
-            </div>
-          </div>
+    <div className="mx-auto max-w-[1320px] space-y-5 pb-28">
+      {/* Page header */}
+      <div className="flex items-start gap-3 px-1">
+        <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
+        <div>
+          <h1 className="text-xl font-semibold text-primary">Assignments</h1>
+          <p className="mt-0.5 text-sm text-secondary">
+            Manage and create assignments for your classes.
+          </p>
         </div>
-      </section>
+      </div>
 
-      <>
-        <section className="rounded-[30px] border border-(--color-border) bg-white p-4 shadow-(--shadow-card) sm:p-5">
-          <div className="flex flex-col gap-3 lg:flex-row">
-            <div className="relative flex-1">
-              <Search
-                size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-(--color-muted)"
-              />
-              <input
-                type="text"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search assignments"
-                className="h-12 w-full rounded-full border border-(--color-border) bg-(--color-surface-raised) pl-11 pr-4 text-sm text-(--color-primary) outline-none transition-colors focus:border-(--color-primary)"
-              />
-            </div>
+      {/* Filter + Search bar */}
+      <div className="flex items-center gap-3">
+        <Button
+          variant="secondary"
+          className="rounded-full"
+          iconLeft={<SlidersHorizontal size={15} />}
+        >
+          Filter By
+        </Button>
 
-            <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                className="rounded-full"
-                iconLeft={<SlidersHorizontal size={15} />}
-              >
-                Filter
-              </Button>
-              <Button
-                variant="secondary"
-                className="rounded-full"
-                loading={refreshing}
-                onClick={() => void loadAssignments(true)}
-                iconLeft={<RefreshCcw size={15} />}
-              >
-                Refresh
-              </Button>
-            </div>
-          </div>
+        <div className="relative flex-1">
+          <Search
+            size={16}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
+          />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search Assignment"
+            className="h-10 w-full rounded-full border border-border bg-white pl-10 pr-4 text-sm text-primary outline-none transition-colors focus:border-primary"
+          />
+        </div>
+      </div>
+
+      {/* Cards grid */}
+      {filteredAssignments.length === 0 ? (
+        <section className="rounded-[24px] border border-border bg-white p-10 text-center">
+          <h2 className="text-lg font-semibold text-primary">
+            No assignments match your search
+          </h2>
+          <p className="mt-2 text-sm text-secondary">
+            Try a different keyword or clear the search.
+          </p>
         </section>
+      ) : (
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {filteredAssignments.map((assignment) => (
+            <AssignmentCard
+              key={assignment._id}
+              assignment={assignment}
+              onDelete={handleDelete}
+              onRegenerate={handleRegenerate}
+              onView={(id) => router.push(`/assignments/${id}`)}
+            />
+          ))}
+        </section>
+      )}
 
-        {filteredAssignments.length === 0 ? (
-          <section className="rounded-[30px] border border-(--color-border) bg-white p-10 text-center shadow-(--shadow-card)">
-            <h2 className="text-xl font-semibold text-(--color-primary)">
-              No assignments match your search
-            </h2>
-            <p className="mt-3 text-sm text-(--color-secondary)">
-              Try a different keyword or clear the current search input.
-            </p>
-          </section>
-        ) : (
-          <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-            {filteredAssignments.map((assignment) => (
-              <AssignmentCard
-                key={assignment._id}
-                assignment={assignment}
-                onDelete={handleDelete}
-                onRegenerate={handleRegenerate}
-                onView={(id) => router.push(`/assignments/${id}`)}
-              />
-            ))}
-          </section>
-        )}
-
-        <div className="print-hidden fixed bottom-24 right-4 sm:bottom-8 sm:right-6 lg:right-8">
-          <Button
-            size="lg"
-            onClick={() => router.push("/assignments/create")}
-            iconLeft={<Plus size={16} />}
-          >
-            Create Assignment
-          </Button>
-        </div>
-      </>
+      {/* Floating create button — bottom center */}
+      <div className="print-hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+        <button
+          onClick={() => router.push("/assignments/create")}
+          className="flex items-center gap-2 rounded-full bg-[#1a1a1a] px-6 py-3 text-sm font-medium text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition-colors hover:bg-black"
+        >
+          <Plus size={16} />
+          Create Assignment
+        </button>
+      </div>
     </div>
   );
 }

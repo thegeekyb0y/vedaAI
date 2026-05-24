@@ -26,6 +26,16 @@ export interface IGeneratedPaper {
   sections: ISection[];
 }
 
+export interface PaperMeta {
+  schoolName: string;
+  subject: string;
+  className: string;
+  section: string;
+  timeAllowed: string;
+  maxMarks: string;
+  instructions: string;
+}
+
 export interface IAssignment {
   _id: string;
   title: string;
@@ -33,6 +43,7 @@ export interface IAssignment {
   questionTypes: IQuestionTypeInput[];
   additionalInstructions?: string;
   fileUrl?: string;
+  paperMeta?: PaperMeta;
   status: AssignmentStatus;
   result?: IGeneratedPaper;
   createdAt: string;

@@ -2,14 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Download, RefreshCcw } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
 import toast from "react-hot-toast";
 import { AssignmentPaper } from "@/components/assignments/AssignmentPaper";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import {
-  ASSIGNMENT_POLL_INTERVAL,
-} from "@/features/assignments/constants";
+import { ASSIGNMENT_POLL_INTERVAL } from "@/features/assignments/constants";
 import {
   getAssignmentById,
   regenerateAssignment,
@@ -30,10 +28,10 @@ export default function AssignmentDetailPage() {
   const assignmentId = params.id;
 
   const fetchAssignment = useCallback(async () => {
-    const nextAssignment = await getAssignmentById(assignmentId);
-    setAssignment(nextAssignment);
+    const next = await getAssignmentById(assignmentId);
+    setAssignment(next);
     setError(null);
-    return nextAssignment;
+    return next;
   }, [assignmentId]);
 
   useEffect(() => {
@@ -41,22 +39,19 @@ export default function AssignmentDetailPage() {
 
     const load = async () => {
       try {
-        const nextAssignment = await getAssignmentById(assignmentId);
+        const next = await getAssignmentById(assignmentId);
         if (!isMounted) return;
-        setAssignment(nextAssignment);
+        setAssignment(next);
         setError(null);
       } catch (err) {
         if (!isMounted) return;
         setError(getApiErrorMessage(err, "Failed to load assignment"));
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        if (isMounted) setLoading(false);
       }
     };
 
     void load();
-
     return () => {
       isMounted = false;
     };
@@ -67,8 +62,8 @@ export default function AssignmentDetailPage() {
 
     const poll = async () => {
       try {
-        const nextAssignment = await fetchAssignment();
-        if (isAssignmentActive(nextAssignment.status)) {
+        const next = await fetchAssignment();
+        if (isAssignmentActive(next.status)) {
           timeoutRef.current = setTimeout(poll, ASSIGNMENT_POLL_INTERVAL);
         }
       } catch {
@@ -77,11 +72,8 @@ export default function AssignmentDetailPage() {
     };
 
     timeoutRef.current = setTimeout(poll, ASSIGNMENT_POLL_INTERVAL);
-
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [assignment, fetchAssignment]);
 
@@ -93,8 +85,6 @@ export default function AssignmentDetailPage() {
         return "Generation is in progress. This page will update automatically.";
       case "failed":
         return "Generation failed. You can retry without leaving this page.";
-      case "done":
-        return "Your generated paper is ready for review and print.";
       default:
         return "Loading assignment details.";
     }
@@ -102,10 +92,9 @@ export default function AssignmentDetailPage() {
 
   const handleRegenerate = async () => {
     setRegenerating(true);
-
     try {
-      const nextAssignment = await regenerateAssignment(assignmentId);
-      setAssignment(nextAssignment);
+      const next = await regenerateAssignment(assignmentId);
+      setAssignment(next);
       toast.success("Assignment queued for regeneration");
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to regenerate assignment"));
@@ -116,7 +105,6 @@ export default function AssignmentDetailPage() {
 
   const handleRetryLoad = async () => {
     setLoading(true);
-
     try {
       await fetchAssignment();
     } catch (err) {
@@ -136,15 +124,18 @@ export default function AssignmentDetailPage() {
 
   if (error || !assignment) {
     return (
-      <section className="mx-auto max-w-3xl rounded-[34px] border border-rose-200 bg-white p-8 text-center shadow-(--shadow-card)">
-        <h1 className="text-2xl font-semibold text-(--color-primary)">
+      <section className="mx-auto max-w-3xl rounded-[34px] border border-rose-200 bg-white p-8 text-center shadow-[var(--shadow-card)]">
+        <h1 className="text-2xl font-semibold text-primary">
           Assignment not available
         </h1>
-        <p className="mt-4 text-sm leading-7 text-(--color-secondary)">
+        <p className="mt-4 text-sm leading-7 text-secondary">
           {error ?? "We could not find the requested assignment."}
         </p>
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-          <Button variant="secondary" onClick={() => router.push("/assignments")}>
+          <Button
+            variant="secondary"
+            onClick={() => router.push("/assignments")}
+          >
             Back to Assignments
           </Button>
           <Button onClick={() => void handleRetryLoad()}>Try Again</Button>
@@ -156,83 +147,72 @@ export default function AssignmentDetailPage() {
   const isActive = isAssignmentActive(assignment.status);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <section className="rounded-[34px] bg-white p-6 shadow-(--shadow-card) sm:p-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-(--color-orange)">
-              Assignment Status
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-(--color-primary) sm:text-4xl">
-              {assignment.title}
-            </h1>
-            <p className="mt-4 text-sm leading-7 text-(--color-secondary)">
+    <div className="mx-auto max-w-[1100px] space-y-5">
+      {/* Status bar — hidden when done, hidden on print */}
+      {assignment.status !== "done" && (
+        <section className="print-hidden rounded-[28px] bg-white px-6 py-5 shadow-[var(--shadow-card)]">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <p className="text-[15px] font-medium text-secondary">
               {statusText}
             </p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                variant="secondary"
+                iconLeft={<RefreshCcw size={15} />}
+                loading={regenerating}
+                disabled={isActive}
+                onClick={() => void handleRegenerate()}
+              >
+                Regenerate
+              </Button>
+            </div>
           </div>
+        </section>
+      )}
 
-          <div className="print-hidden flex flex-col gap-3 sm:flex-row">
-            <Button
-              variant="secondary"
-              iconLeft={<RefreshCcw size={15} />}
-              loading={regenerating}
-              disabled={isActive}
-              onClick={handleRegenerate}
-            >
-              Regenerate
-            </Button>
-            <Button
-              iconLeft={<Download size={15} />}
-              disabled={assignment.status !== "done"}
-              onClick={() => window.print()}
-            >
-              Print / Save PDF
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {isActive ? (
-        <section className="rounded-[34px] border border-(--color-border) bg-white p-8 shadow-(--shadow-card) sm:p-10">
+      {/* Generating state */}
+      {isActive && (
+        <section className="rounded-[34px] border border-border bg-white p-8 shadow-[var(--shadow-card)] sm:p-10">
           <div className="mx-auto max-w-xl text-center">
             <LoadingSpinner size="lg" />
-            <h2 className="mt-6 text-2xl font-semibold text-(--color-primary)">
+            <h2 className="mt-6 text-2xl font-semibold text-primary">
               Generating your assignment
             </h2>
-            <p className="mt-3 text-sm leading-7 text-(--color-secondary)">
-              We are polling the existing backend until the generation reaches a final state.
-              You can leave this page open and it will refresh automatically.
+            <p className="mt-3 text-sm leading-7 text-secondary">
+              Sit tight — this page will refresh automatically once your paper
+              is ready.
             </p>
           </div>
         </section>
-      ) : null}
+      )}
 
-      {assignment.status === "failed" ? (
-        <section className="rounded-[34px] border border-rose-200 bg-white p-8 shadow-(--shadow-card) sm:p-10">
+      {/* Failed state */}
+      {assignment.status === "failed" && (
+        <section className="rounded-[34px] border border-rose-200 bg-white p-8 shadow-[var(--shadow-card)] sm:p-10">
           <div className="mx-auto max-w-xl text-center">
-            <h2 className="text-2xl font-semibold text-(--color-primary)">
+            <h2 className="text-2xl font-semibold text-primary">
               Generation failed
             </h2>
-            <p className="mt-3 text-sm leading-7 text-(--color-secondary)">
-              The backend marked this assignment as failed. You can retry generation
-              using the existing regenerate endpoint.
+            <p className="mt-3 text-sm leading-7 text-secondary">
+              Something went wrong during generation. You can retry below.
             </p>
             <div className="mt-6">
               <Button
                 iconLeft={<RefreshCcw size={15} />}
                 loading={regenerating}
-                onClick={handleRegenerate}
+                onClick={() => void handleRegenerate()}
               >
                 Try Again
               </Button>
             </div>
           </div>
         </section>
-      ) : null}
+      )}
 
-      {assignment.status === "done" && assignment.result ? (
+      {/* Paper */}
+      {assignment.status === "done" && assignment.result && (
         <AssignmentPaper assignment={assignment} />
-      ) : null}
+      )}
     </div>
   );
 }

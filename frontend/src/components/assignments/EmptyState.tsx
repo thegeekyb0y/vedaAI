@@ -16,25 +16,27 @@ export const EmptyState = () => {
         width={300}
         height={300}
         priority
-        className="h-[220px] w-[220px] md:h-[260px] md:w-[260px] lg:h-[300px] lg:w-[300px]"
+        className="h-[180px] w-[180px] drop-shadow-sm sm:h-[220px] sm:w-[220px] md:h-[260px] md:w-[260px] lg:h-[300px] lg:w-[300px]"
       />
 
       <h2 className="mt-10 text-[28px] font-semibold leading-[40px] text-primary">
         No assignments yet
       </h2>
-      <p className="mt-3 max-w-[486px] text-[16px] leading-[1.45] text-secondary">
+      <p className="max-w-[486px] text-[16px] leading-[1.45] text-secondary">
         Create your first assignment to start collecting and grading student
         submissions. You can set up rubrics, define marking criteria, and let AI
         assist with grading.
       </p>
 
-      <Button
-        className="mt-10 h-16 rounded-full bg-[#1f1f1f] px-9 text-[18px] font-medium text-white shadow-[0_12px_24px_rgba(0,0,0,0.18)] hover:bg-[#181818]"
-        onClick={() => router.push("/assignments/create")}
-        iconLeft={<Plus size={22} />}
-      >
-        Create Your First Assignment
-      </Button>
+      <div className="mt-6 sm:mt-8 md:mt-10 w-full sm:w-auto rounded-full bg-gradient-to-b from-[#666666] to-[#2b2b2b] p-[1.5px]">
+        <Button
+          className="h-12 w-full rounded-full bg-[#1f1f1f] px-6 text-[15px] font-medium text-white sm:h-14 sm:px-8 sm:text-[16px] md:h-14 md:px-9 md:text-[18px]"
+          onClick={() => router.push("/assignments/create")}
+          iconLeft={<Plus size={22} />}
+        >
+          Create Your First Assignment
+        </Button>
+      </div>
     </section>
   );
 };

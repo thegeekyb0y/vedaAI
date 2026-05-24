@@ -13,24 +13,24 @@ export const Counter = ({ value, onChange, min = 1 }: CounterProps) => {
   };
 
   return (
-    <div className="inline-flex h-11 items-center justify-between rounded-2xl border border-(--color-border) bg-white px-2.5 shadow-(--shadow-soft)">
+    <div className="inline-flex h-14 min-w-[124px] items-center justify-between rounded-full bg-white px-4">
       <button
         type="button"
         onClick={decrement}
         disabled={value <= min}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-(--color-secondary) transition-colors hover:bg-(--color-surface-subtle) hover:text-(--color-primary) disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex h-7 w-7 items-center justify-center rounded-full text-[#d3d3d3] transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Minus size={14} />
+        <Minus size={18} strokeWidth={2} />
       </button>
-      <span className="min-w-8 text-center text-sm font-semibold text-(--color-primary)">
+      <span className="min-w-6 text-center text-[17px] font-semibold text-primary">
         {value}
       </span>
       <button
         type="button"
         onClick={() => onChange(value + 1)}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-(--color-secondary) transition-colors hover:bg-(--color-surface-subtle) hover:text-(--color-primary)"
+        className="flex h-7 w-7 items-center justify-center rounded-full text-[#d3d3d3] transition-colors hover:text-primary"
       >
-        <Plus size={14} />
+        <Plus size={18} strokeWidth={2} />
       </button>
     </div>
   );

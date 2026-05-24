@@ -1,15 +1,14 @@
 import { AxiosProgressEvent } from "axios";
 import { apiClient } from "@/lib/api";
-import {
-  AssignmentCreateFormValues,
-} from "@/features/assignments/form-schema";
-import { IAssignment } from "@/types/assignment.types";
+import { AssignmentCreateFormValues } from "@/features/assignments/form-schema";
+import { IAssignment, PaperMeta } from "@/types/assignment.types";
 
 type CreateAssignmentPayload = Omit<
   AssignmentCreateFormValues,
   "additionalInstructions"
 > & {
   additionalInstructions?: string;
+  paperMeta?: PaperMeta;
 };
 
 export type UploadFileResponse = {

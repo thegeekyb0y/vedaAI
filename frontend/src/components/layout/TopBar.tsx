@@ -22,7 +22,7 @@ export const Topbar = () => {
 
   return (
     <header className="print-hidden fixed left-0 right-0 top-0 z-30 lg:left-[calc(var(--sidebar-width)+var(--shell-gap)+(var(--shell-pad)*2))] lg:right-[var(--shell-pad)] lg:top-[var(--shell-pad)]">
-      <div className="mx-auto flex h-[var(--topbar-height)] items-center justify-between gap-4 rounded-2xl border border-white/60 bg-white/92 px-4 shadow-topbar backdrop-blur sm:px-5 lg:px-6">
+      <div className="mx-auto flex h-[var(--topbar-height)] items-center justify-between gap-4 rounded-2xl border border-white/60 bg-white/92 px-4  backdrop-blur sm:px-5 lg:px-6">
         <div className="flex min-w-0 items-center gap-3">
           {showBack ? (
             <button
@@ -46,26 +46,22 @@ export const Topbar = () => {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <button className="relative flex h-10 w-10 items-center justify-center rounded-full text-secondary transition-colors hover:text-primary">
-            <Bell size={17} strokeWidth={1.8} />
+            <Bell size={19} strokeWidth={2.2} />
             <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-orange" />
           </button>
 
           <div className="flex items-center gap-3 rounded-full bg-white px-1 py-1">
             <Image
-              src="/logo.avif"
+              src="/Avatar.png"
               alt="John Doe"
-              width={40}
-              height={40}
-              className="h-10 w-10 rounded-full object-cover"
+              width={36}
+              height={36}
+              className="h-8 w-8 rounded-full object-cover"
             />
             <div className="hidden text-left sm:block">
               <p className="text-[16px] font-semibold text-primary">John Doe</p>
             </div>
-            <ChevronDown
-              size={14}
-              strokeWidth={2}
-              className="text-secondary"
-            />
+            <ChevronDown size={18} strokeWidth={3} className="text-secondary" />
           </div>
         </div>
       </div>

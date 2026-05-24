@@ -1,7 +1,12 @@
 "use client";
 
-import { FieldErrors, UseFieldArrayRemove, UseFormRegister, UseFormSetValue } from "react-hook-form";
-import { Trash2 } from "lucide-react";
+import {
+  FieldErrors,
+  UseFieldArrayRemove,
+  UseFormRegister,
+  UseFormSetValue,
+} from "react-hook-form";
+import { ChevronDown, X } from "lucide-react";
 import { Counter } from "@/components/ui/Counter";
 import { QUESTION_TYPE_OPTIONS } from "@/features/assignments/constants";
 import { AssignmentCreateFormInput } from "@/features/assignments/form-schema";
@@ -30,87 +35,78 @@ export const QuestionTypeRow = ({
   const rowErrors = errors?.[index];
 
   return (
-    <div className="rounded-[28px] border border-(--color-border) bg-white p-4 shadow-(--shadow-soft)">
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_150px_130px_auto] xl:items-start">
-        <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-[0.14em] text-(--color-muted)">
-            Question Type
-          </label>
-          <select
-            {...register(`questionTypes.${index}.type`)}
-            className="h-12 w-full rounded-2xl border border-(--color-border) bg-(--color-surface-raised) px-4 text-sm text-(--color-primary) outline-none transition-colors focus:border-(--color-primary)"
-          >
-            {QUESTION_TYPE_OPTIONS.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-          {rowErrors?.type ? (
-            <p className="text-sm text-(--color-danger)">{rowErrors.type.message}</p>
-          ) : null}
-        </div>
+    <div className="grid items-start gap-x-4 gap-y-3 md:grid-cols-[minmax(0,1fr)_28px_136px_124px]">
+      <div className="relative space-y-2">
+        <select
+          {...register(`questionTypes.${index}.type`)}
+          className="h-14 w-full appearance-none rounded-full bg-white px-5 pr-12 text-[18px] font-medium text-primary outline-none"
+        >
+          {QUESTION_TYPE_OPTIONS.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          size={18}
+          className="pointer-events-none absolute right-4 top-[18px] text-primary"
+        />
+        {rowErrors?.type ? (
+          <p className="text-sm text-danger">{rowErrors.type.message}</p>
+        ) : null}
+      </div>
 
-        <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-[0.14em] text-(--color-muted)">
-            Questions
-          </label>
-          <input
-            type="hidden"
-            {...register(`questionTypes.${index}.noOfQuestions`, {
-              valueAsNumber: true,
-            })}
-          />
-          <Counter
-            value={noOfQuestions}
-            onChange={(next) =>
-              setValue(`questionTypes.${index}.noOfQuestions`, next, {
-                shouldDirty: true,
-                shouldValidate: true,
-              })
-            }
-          />
-          {rowErrors?.noOfQuestions ? (
-            <p className="text-sm text-(--color-danger)">
-              {rowErrors.noOfQuestions.message}
-            </p>
-          ) : null}
-        </div>
+      <div className="flex h-14 items-center justify-center">
+        <button
+          type="button"
+          onClick={() => remove(index)}
+          disabled={!canRemove}
+          className="text-primary transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-30"
+        >
+          <X size={22} strokeWidth={2} />
+        </button>
+      </div>
 
-        <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-[0.14em] text-(--color-muted)">
-            Marks
-          </label>
-          <input
-            type="hidden"
-            {...register(`questionTypes.${index}.marks`, {
-              valueAsNumber: true,
-            })}
-          />
-          <Counter
-            value={marks}
-            onChange={(next) =>
-              setValue(`questionTypes.${index}.marks`, next, {
-                shouldDirty: true,
-                shouldValidate: true,
-              })
-            }
-          />
-          {rowErrors?.marks ? (
-            <p className="text-sm text-(--color-danger)">{rowErrors.marks.message}</p>
-          ) : null}
-        </div>
+      <div className="space-y-2">
+        <input
+          type="hidden"
+          {...register(`questionTypes.${index}.noOfQuestions`, {
+            valueAsNumber: true,
+          })}
+        />
+        <Counter
+          value={noOfQuestions}
+          onChange={(next) =>
+            setValue(`questionTypes.${index}.noOfQuestions`, next, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+        />
+        {rowErrors?.noOfQuestions ? (
+          <p className="text-sm text-danger">{rowErrors.noOfQuestions.message}</p>
+        ) : null}
+      </div>
 
-        <div className="flex items-end">
-          <button
-            type="button"
-            onClick={() => remove(index)}
-            disabled={!canRemove}
-            className="flex h-12 w-12 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-raised) text-(--color-secondary) transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-(--color-danger) disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
+      <div className="space-y-2">
+        <input
+          type="hidden"
+          {...register(`questionTypes.${index}.marks`, {
+            valueAsNumber: true,
+          })}
+        />
+        <Counter
+          value={marks}
+          onChange={(next) =>
+            setValue(`questionTypes.${index}.marks`, next, {
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }
+        />
+        {rowErrors?.marks ? (
+          <p className="text-sm text-danger">{rowErrors.marks.message}</p>
+        ) : null}
       </div>
     </div>
   );
