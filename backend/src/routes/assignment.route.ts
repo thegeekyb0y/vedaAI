@@ -1,6 +1,5 @@
 import { Router, Request, Response } from "express";
 import { Assignment } from "../models/Assignment";
-import { addGenerationJob } from "../queues/assignmentQueue";
 import { asyncHandler } from "../middlewares/asyncHandler";
 
 const router = Router();
@@ -15,7 +14,7 @@ router.post(
       questionTypes,
       additionalInstructions,
       fileUrl,
-      paperMeta, // ← added
+      paperMeta,
     } = req.body;
 
     const assignment = await Assignment.create({
@@ -24,9 +23,11 @@ router.post(
       questionTypes,
       additionalInstructions,
       fileUrl,
-      paperMeta, // ← added
+      paperMeta,
     });
 
+    // CHANGED: lazy import so Redis queue is not touched on GET requests
+    const { addGenerationJob } = await import("../queues/assignmentQueue");
     await addGenerationJob(assignment._id.toString());
 
     res.status(201).json(assignment);
@@ -81,7 +82,10 @@ router.post(
       return;
     }
 
+    // CHANGED: lazy import
+    const { addGenerationJob } = await import("../queues/assignmentQueue");
     await addGenerationJob(assignment._id.toString());
+
     res.json(assignment);
   }),
 );
