@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Eye, MoreVertical, Trash2 } from "lucide-react";
+import { MoreVertical, Eye, Trash2 } from "lucide-react";
 import { IAssignment } from "@/types/assignment.types";
 import { formatAssignmentDate } from "@/features/assignments/utils";
 
@@ -27,10 +27,10 @@ export const AssignmentCard = ({ assignment, onDelete, onView }: Props) => {
   }, []);
 
   return (
-    <article className="rounded-[20px] border border-border bg-white px-5 py-5 transition-shadow hover:shadow-md">
+    <article className="rounded-[20px] border border-border bg-white px-4 py-4 transition-shadow hover:shadow-md sm:px-5 sm:py-5">
       {/* Title row */}
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-[15px] font-semibold leading-snug text-primary">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="text-[15px] font-bold leading-snug text-primary ">
           {assignment.title}
         </h3>
 
@@ -43,25 +43,24 @@ export const AssignmentCard = ({ assignment, onDelete, onView }: Props) => {
           </button>
 
           {menuOpen && (
-            <div className="absolute right-0 top-9 z-20 w-44 rounded-2xl border border-border bg-white py-1.5 shadow-lg">
+            <div className="absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-2xl border border-border bg-white shadow-lg">
               <button
                 onClick={() => {
                   onView(assignment._id);
                   setMenuOpen(false);
                 }}
-                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-primary transition-colors hover:bg-surface-subtle"
+                className="flex w-full items-center px-4 py-3 text-left text-[14px] font-medium text-primary transition-colors hover:bg-surface-subtle"
               >
-                <Eye size={14} />
                 View Assignment
               </button>
+              <div className="mx-4 h-px bg-border" />
               <button
                 onClick={() => {
                   onDelete(assignment._id);
                   setMenuOpen(false);
                 }}
-                className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-danger transition-colors hover:bg-rose-50"
+                className="flex w-full items-center px-4 py-3 text-left text-[14px] font-medium text-danger transition-colors hover:bg-rose-50"
               >
-                <Trash2 size={14} />
                 Delete
               </button>
             </div>
@@ -70,14 +69,14 @@ export const AssignmentCard = ({ assignment, onDelete, onView }: Props) => {
       </div>
 
       {/* Dates row */}
-      <div className="mt-8 flex items-center justify-between text-[13px] text-secondary">
+      <div className="mt-6 flex items-center justify-between text-[13px] text-secondary">
         <span>
-          <span className="font-medium text-primary">Assigned on</span>
+          <span className="font-semibold text-primary">Assigned on</span>
           {" : "}
           {formatAssignmentDate(assignment.createdAt)}
         </span>
         <span>
-          <span className="font-medium text-primary">Due</span>
+          <span className="font-semibold text-primary">Due</span>
           {" : "}
           {formatAssignmentDate(assignment.dueDate)}
         </span>

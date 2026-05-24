@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, RefreshCcw, Search, SlidersHorizontal } from "lucide-react";
+import {
+  Filter,
+  Plus,
+  RefreshCcw,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { AssignmentCard } from "@/components/assignments/AssignmentCard";
 import { AssignmentsListSkeleton } from "@/components/assignments/AssignmentsListSkeleton";
@@ -126,9 +132,9 @@ export default function AssignmentsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1320px] space-y-5 pb-28">
-      {/* Page header */}
-      <div className="flex items-start gap-3 px-1">
+    <div className="mx-auto max-w-[1320px] space-y-4 pb-32 lg:pb-28">
+      {/* Page header — hidden on mobile (topbar shows "Assignments" already) */}
+      <div className="hidden items-start gap-3 px-1 lg:flex">
         <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
         <div>
           <h1 className="text-xl font-semibold text-primary">Assignments</h1>
@@ -138,27 +144,24 @@ export default function AssignmentsPage() {
         </div>
       </div>
 
-      {/* Filter + Search bar */}
-      <div className="flex items-center gap-3">
-        <Button
-          variant="secondary"
-          className="rounded-full"
-          iconLeft={<SlidersHorizontal size={15} />}
-        >
-          Filter By
-        </Button>
+      <div className="flex items-center gap-2 lg:gap-3">
+        <button className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-white px-4 py-2 text-[13px] font-medium text-secondary shadow-sm lg:px-5 lg:py-2.5 lg:text-[14px]">
+          <Filter size={14} strokeWidth={1.8} />
+          <span className="hidden lg:inline">Filter By</span>
+          <span className="lg:hidden">Filter</span>
+        </button>
 
         <div className="relative flex-1">
           <Search
-            size={16}
+            size={14}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
           />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search Assignment"
-            className="h-10 w-full rounded-full border border-border bg-white pl-10 pr-4 text-sm text-primary outline-none transition-colors focus:border-primary"
+            placeholder="Search Name"
+            className="h-10 w-full rounded-full border border-border bg-white pl-10 pr-4 text-[13px] text-primary shadow-sm outline-none transition-colors focus:border-primary lg:h-10 lg:text-sm"
           />
         </div>
       </div>
@@ -174,7 +177,7 @@ export default function AssignmentsPage() {
           </p>
         </section>
       ) : (
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <section className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2">
           {filteredAssignments.map((assignment) => (
             <AssignmentCard
               key={assignment._id}
@@ -187,8 +190,15 @@ export default function AssignmentsPage() {
         </section>
       )}
 
-      {/* Floating create button — bottom center */}
-      <div className="print-hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+      <button
+        onClick={() => router.push("/assignments/create")}
+        className="print-hidden fixed bottom-[88px] right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-[0_4px_16px_rgba(0,0,0,0.15)] transition-transform active:scale-95 lg:hidden"
+      >
+        <Plus size={22} strokeWidth={2.5} className="text-orange" />
+      </button>
+
+      {/* Desktop: pill bottom-center */}
+      <div className="print-hidden fixed bottom-8 left-1/2 z-50 hidden -translate-x-1/2 lg:block">
         <button
           onClick={() => router.push("/assignments/create")}
           className="flex items-center gap-2 rounded-full bg-[#1a1a1a] px-6 py-3 text-sm font-medium text-white shadow-[0_8px_24px_rgba(0,0,0,0.25)] transition-colors hover:bg-black"

@@ -85,6 +85,8 @@ export default function AssignmentDetailPage() {
         return "Generation is in progress. This page will update automatically.";
       case "failed":
         return "Generation failed. You can retry without leaving this page.";
+      case "done":
+        return "Your generated paper is ready for review and print.";
       default:
         return "Loading assignment details.";
     }
@@ -148,27 +150,23 @@ export default function AssignmentDetailPage() {
 
   return (
     <div className="mx-auto max-w-[1100px] space-y-5">
-      {/* Status bar — hidden when done, hidden on print */}
-      {assignment.status !== "done" && (
-        <section className="print-hidden rounded-[28px] bg-white px-6 py-5 shadow-[var(--shadow-card)]">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <p className="text-[15px] font-medium text-secondary">
-              {statusText}
-            </p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                variant="secondary"
-                iconLeft={<RefreshCcw size={15} />}
-                loading={regenerating}
-                disabled={isActive}
-                onClick={() => void handleRegenerate()}
-              >
-                Regenerate
-              </Button>
-            </div>
+      {/* Status bar — always visible on screen, hidden on print */}
+      <section className="print:hidden rounded-[28px] bg-white px-6 py-5 shadow-[var(--shadow-card)]">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <p className="text-[15px] font-medium text-secondary">{statusText}</p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              variant="secondary"
+              iconLeft={<RefreshCcw size={15} />}
+              loading={regenerating}
+              disabled={isActive}
+              onClick={() => void handleRegenerate()}
+            >
+              Regenerate
+            </Button>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Generating state */}
       {isActive && (

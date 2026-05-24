@@ -31,12 +31,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${bricolage.variable} ${inter.variable} `}>
-      <body className="min-h-screen ">
+    <html lang="en" className={`${bricolage.variable} ${inter.variable}`}>
+      <body className="min-h-screen">
         <Sidebar />
         <div className="min-h-screen lg:pl-[calc(var(--sidebar-width)+var(--shell-gap)+(var(--shell-pad)*2))]">
           <Topbar />
-          <main className="min-h-screen px-4 pb-24 pt-[calc(var(--topbar-height)+1rem)] sm:px-6 lg:px-[var(--shell-pad)] lg:pb-10 lg:pr-[var(--shell-pad)] lg:pt-[calc(var(--topbar-height)+var(--shell-gap)+var(--shell-pad))]">
+          <main className="min-h-screen px-3 pb-28 pt-32 sm:px-4 lg:px-[var(--shell-pad)] lg:pb-10 lg:pr-[var(--shell-pad)] lg:pt-[calc(var(--topbar-height)+var(--shell-gap)+var(--shell-pad))]">
             {children}
           </main>
         </div>

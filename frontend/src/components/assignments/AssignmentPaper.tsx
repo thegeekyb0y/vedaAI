@@ -78,7 +78,7 @@ export const AssignmentPaper = ({ assignment }: AssignmentPaperProps) => {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 print:space-y-0">
       {/* AI intro card */}
       <section className="rounded-[34px] bg-[#272727] px-7 py-8 text-white print:hidden shadow-[0_20px_40px_rgba(0,0,0,0.18)]">
         <p className="max-w-4xl text-[18px] font-semibold leading-8">
@@ -100,7 +100,7 @@ export const AssignmentPaper = ({ assignment }: AssignmentPaperProps) => {
       {/* Printable paper */}
       <section
         id="paper"
-        className="rounded-[34px] bg-white px-7 py-9 text-primary shadow-[0_20px_40px_rgba(0,0,0,0.12)] sm:px-10 sm:py-10"
+        className="rounded-[34px] bg-white px-7 py-9 text-primary shadow-[0_20px_40px_rgba(0,0,0,0.12)] sm:px-10 sm:py-10 print:rounded-none print:shadow-none print:p-0"
       >
         {/* Header */}
         <div className="text-center">
