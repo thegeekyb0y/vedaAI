@@ -94,6 +94,11 @@ export const StepOne = ({ onNext, onBack }: Props) => {
   });
   const questionTypes = useWatch({ control, name: "questionTypes" });
 
+  const additionalInstructionsValue = useWatch({
+    control,
+    name: "additionalInstructions",
+  });
+
   const totals = useMemo(() => {
     return (questionTypes ?? []).reduce(
       (acc, item) => {
@@ -204,7 +209,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
                     className="grid items-start gap-x-4 gap-y-3 grid-cols-[minmax(0,1fr)_28px_136px_124px]"
                   >
                     <div className="relative space-y-2">
-                      {/* ✅ FIX: explicit value + onChange overrides register's ref conflict */}
                       <select
                         {...register(`questionTypes.${index}.type`)}
                         value={questionTypes[index]?.type ?? field.type}
@@ -362,7 +366,12 @@ export const StepOne = ({ onNext, onBack }: Props) => {
               </label>
               <div className="relative">
                 <textarea
-                  {...register("additionalInstructions")}
+                  value={additionalInstructionsValue ?? ""}
+                  onChange={(e) =>
+                    setValue("additionalInstructions", e.target.value, {
+                      shouldDirty: true,
+                    })
+                  }
                   rows={4}
                   placeholder="e.g Generate a question paper for 3 hour exam duration..."
                   className="w-full rounded-[24px] border border-dashed border-[#e5e5e5] bg-white px-5 py-5 pr-16 text-[14px] leading-7 text-primary outline-none placeholder:text-secondary/80 resize-none"
