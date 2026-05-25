@@ -94,21 +94,19 @@ The JSON must follow this EXACT structure — no other structure is acceptable:
   ]
 }
 
-TOPIC / SUBJECT CONTEXT (this is the most important instruction — ALL questions must be based strictly on this):
+TOPIC / SUBJECT CONTEXT (most important — ALL questions must be strictly based on this):
 ${assignment.additionalInstructions || "General knowledge"}
 
 Question Types to include:
 ${typesList}
 
-${
-  assignment.additionalInstructions
-    ? `Additional Instructions:\n${assignment.additionalInstructions}`
-    : ""
-}
-
 Rules:
-- Every single question MUST be directly relevant to the topic above. Do not generate questions outside this topic under any circumstance
-- Use EXACTLY the field names shown above: sections, title, instruction, questions, text, difficulty, marks, answer
+- Every question MUST be directly relevant to the topic above. Never go off-topic.
+- For "Multiple Choice Questions": embed exactly 4 options inside the text field on new lines using this exact format:
+  "Question stem here?\n(a) First option\n(b) Second option\n(c) Third option\n(d) Fourth option"
+  The answer field must state the correct option and briefly explain why, e.g. "(b) Photosystem II — because it contains the oxygen-evolving complex."
+- For all other question types: text is just the question, answer is a clear 2–3 sentence explanation.
+- Use EXACTLY the field names: sections, title, instruction, questions, text, difficulty, marks, answer
 - difficulty must be exactly one of: "Easy", "Moderate", "Challenging"
 - Group questions by type into separate sections (Section A, Section B, etc.)
 - Each section must have a clear instruction line
