@@ -23,17 +23,18 @@ export default function AssignmentDetailPage() {
   const router = useRouter();
   const assignmentId = params.id;
 
-  const { upsertAssignment, updateAssignmentStatus } = useAssignmentStore();
+  const { upsertAssignment } = useAssignmentStore();
 
-  // Derive current assignment from store
+  // Only use store value to avoid flash — but always fetch full record on mount
   const storeAssignment = useAssignmentStore((s) =>
     s.assignments.find((a) => a._id === assignmentId),
   );
 
   const [localAssignment, setLocalAssignment] = useState<IAssignment | null>(
-    storeAssignment ?? null,
+    // Seed with store value only if it already has result (i.e. was previously fully loaded)
+    storeAssignment?.result !== undefined ? storeAssignment : null,
   );
-  const [loading, setLoading] = useState(!storeAssignment);
+  const [loading, setLoading] = useState(true); // always start loading to fetch full record
   const [error, setError] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -41,7 +42,11 @@ export default function AssignmentDetailPage() {
   // Keep local state in sync when store updates (socket pushes)
   useEffect(() => {
     if (storeAssignment) {
-      setLocalAssignment(storeAssignment);
+      setLocalAssignment((prev) => {
+        // Only update from store if store has newer/fuller data
+        if (!prev) return storeAssignment;
+        return { ...prev, ...storeAssignment };
+      });
     }
   }, [storeAssignment]);
 
@@ -60,10 +65,8 @@ export default function AssignmentDetailPage() {
     return next;
   }, [assignmentId, upsertAssignment]);
 
-  // Initial load (skip if already in store)
+  // Always fetch full assignment on mount (list page strips result field)
   useEffect(() => {
-    if (storeAssignment) return;
-
     let isMounted = true;
     const load = async () => {
       try {
@@ -83,12 +86,7 @@ export default function AssignmentDetailPage() {
     return () => {
       isMounted = false;
     };
-  }, [assignmentId, storeAssignment, upsertAssignment]);
-
-  // Clear loading once we have data from store
-  useEffect(() => {
-    if (storeAssignment && loading) setLoading(false);
-  }, [storeAssignment, loading]);
+  }, [assignmentId, upsertAssignment]);
 
   // Polling fallback — only runs if socket hasn't already resolved it
   useEffect(() => {
