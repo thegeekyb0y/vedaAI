@@ -94,6 +94,9 @@ The JSON must follow this EXACT structure — no other structure is acceptable:
   ]
 }
 
+TOPIC / SUBJECT CONTEXT (this is the most important instruction — ALL questions must be based strictly on this):
+${assignment.additionalInstructions || "General knowledge"}
+
 Question Types to include:
 ${typesList}
 
@@ -104,6 +107,7 @@ ${
 }
 
 Rules:
+- Every single question MUST be directly relevant to the topic above. Do not generate questions outside this topic under any circumstance
 - Use EXACTLY the field names shown above: sections, title, instruction, questions, text, difficulty, marks, answer
 - difficulty must be exactly one of: "Easy", "Moderate", "Challenging"
 - Group questions by type into separate sections (Section A, Section B, etc.)
@@ -137,14 +141,22 @@ export const generatePaper = async (
 ): Promise<GeneratedPaperEnriched> => {
   const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
-    temperature: 0.7,
+    temperature: 0.4,
     max_tokens: 4000,
     response_format: { type: "json_object" },
     messages: [
       {
         role: "system",
-        content:
-          "You are an expert exam paper generator. You MUST return a JSON object with a top-level 'sections' array. Each section has 'title', 'instruction', and 'questions'. Each question has 'text', 'difficulty', 'marks', and 'answer'. No other structure is acceptable.",
+        content: `You are an expert exam paper generator. You MUST return a JSON object with a top-level 'sections' array. Each section has 'title', 'instruction', and 'questions'. Each question has 'text', 'difficulty', 'marks', and 'answer'. No other structure is acceptable.
+          
+          STRICT RULES:
+- Every question must be 100% relevant to the given topic. Never generate off-topic questions.
+- Answers must be precise, factually correct, and detailed — not vague or one-word.
+- For conceptual questions: answers should be 2-3 sentences explaining the concept clearly.
+- For MCQs: provide the correct option AND a brief reason why it is correct.
+- For numerical/diagram questions: provide step-by-step solutions.
+- Questions should test real understanding, not just memorization.
+- Always return valid JSON matching the exact structure requested. Nothing else.`,
       },
       {
         role: "user",

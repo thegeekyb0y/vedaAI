@@ -53,14 +53,13 @@ interface Props {
   onBack: () => void;
 }
 
-// Custom hook to detect mobile vs desktop cleanly on the client side
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
     const listener = () => setIsMobile(media.matches);
-    listener(); // Initial check
+    listener();
     media.addEventListener("change", listener);
     return () => media.removeEventListener("change", listener);
   }, []);
@@ -205,8 +204,17 @@ export const StepOne = ({ onNext, onBack }: Props) => {
                     className="grid items-start gap-x-4 gap-y-3 grid-cols-[minmax(0,1fr)_28px_136px_124px]"
                   >
                     <div className="relative space-y-2">
+                      {/* ✅ FIX: explicit value + onChange overrides register's ref conflict */}
                       <select
                         {...register(`questionTypes.${index}.type`)}
+                        value={questionTypes[index]?.type ?? field.type}
+                        onChange={(e) =>
+                          setValue(
+                            `questionTypes.${index}.type`,
+                            e.target.value,
+                            { shouldDirty: true, shouldValidate: true },
+                          )
+                        }
                         className="h-14 w-full appearance-none rounded-full bg-white px-5 pr-12 text-[18px] font-medium text-primary outline-none"
                       >
                         {QUESTION_TYPE_OPTIONS.map((type) => (
@@ -389,18 +397,15 @@ export const StepOne = ({ onNext, onBack }: Props) => {
         </div>
       </div>
 
-      {/* ── Mobile layout ── */}
+      {/* ── Mobile layout — untouched ── */}
       <div className="md:hidden space-y-4">
-        {/* Progress bar */}
         <div className="grid grid-cols-2 gap-2">
           <div className="h-1.5 rounded-full bg-primary" />
           <div className="h-1.5 rounded-full bg-border" />
         </div>
 
-        {/* Main card */}
         <section className="rounded-[24px] bg-white px-4 py-5 shadow-sm">
           <div className="space-y-5">
-            {/* Card header */}
             <div>
               <h2 className="text-[18px] font-bold text-primary">
                 Assignment Details
@@ -410,7 +415,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
               </p>
             </div>
 
-            {/* File upload */}
             <FileUpload
               fileName={uploadedFileName}
               isUploaded={isUploaded}
@@ -419,7 +423,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
               onFileSelect={(file) => void handleFileUpload(file)}
             />
 
-            {/* Due Date */}
             <div className="space-y-1.5">
               <label className="text-[14px] font-bold text-primary">
                 Due Date
@@ -445,7 +448,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
               )}
             </div>
 
-            {/* Question Type */}
             <div className="space-y-3">
               <label className="text-[14px] font-bold text-primary">
                 Question Type
@@ -462,7 +464,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
                       key={field.id}
                       className="rounded-[16px] border border-border bg-white p-3 space-y-3"
                     >
-                      {/* Row 1: dropdown + X */}
                       <div className="flex items-center gap-2">
                         <div className="relative flex-1">
                           <select
@@ -490,9 +491,7 @@ export const StepOne = ({ onNext, onBack }: Props) => {
                         </button>
                       </div>
 
-                      {/* Row 2: No. of Questions + Marks side by side */}
                       <div className="grid grid-cols-2 gap-2">
-                        {/* No. of Questions */}
                         <div className="space-y-1.5">
                           <span className="text-[12px] font-medium text-secondary">
                             No. of Questions
@@ -539,7 +538,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
                           </div>
                         </div>
 
-                        {/* Marks */}
                         <div className="space-y-1.5">
                           <span className="text-[12px] font-medium text-secondary">
                             Marks
@@ -586,7 +584,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
                         </div>
                       </div>
 
-                      {/* Validation errors */}
                       {errors.questionTypes?.[index]?.noOfQuestions && (
                         <p className="text-[12px] text-danger">
                           {errors.questionTypes[index]?.noOfQuestions?.message}
@@ -602,7 +599,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
                 })}
               </div>
 
-              {/* Add Question Type */}
               <button
                 type="button"
                 onClick={() =>
@@ -620,7 +616,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
                 Add Question Type
               </button>
 
-              {/* Totals */}
               <div className="text-right text-[13px] text-primary space-y-1">
                 <p>
                   Total Questions :{" "}
@@ -633,7 +628,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
               </div>
             </div>
 
-            {/* Additional Info */}
             <div className="space-y-2">
               <label className="text-[14px] font-bold text-primary">
                 Additional Information (For better output)
@@ -656,7 +650,6 @@ export const StepOne = ({ onNext, onBack }: Props) => {
           </div>
         </section>
 
-        {/* Previous / Next — outside card, full width row */}
         <div className="flex items-center gap-3 pt-1">
           <Button
             variant="secondary"
