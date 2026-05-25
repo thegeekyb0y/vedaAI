@@ -182,7 +182,7 @@ router.get(
           const stemPrefix = `Q${qCounter}. `;
           const stemText = `${mcq.questionText}  ${marksLabel}`;
 
-          const prefixW = doc.widthOfString(stemPrefix, { fontSize: 11 });
+          const prefixW = doc.widthOfString(stemPrefix);
 
           doc
             .fontSize(11)
@@ -240,7 +240,7 @@ router.get(
           ensureSpace(doc, 40);
 
           const stemPrefix = `Q${qCounter}. `;
-          const prefixW = doc.widthOfString(stemPrefix, { fontSize: 11 });
+          const prefixW = doc.widthOfString(stemPrefix);
 
           doc
             .fontSize(11)
@@ -279,7 +279,7 @@ router.get(
         ensureSpace(doc, 36);
 
         const prefix = `Q${aCounter}. `;
-        const prefixW = doc.widthOfString(prefix, { fontSize: 11 });
+        const prefixW = doc.widthOfString(prefix);
 
         doc
           .fontSize(11)
