@@ -85,7 +85,7 @@ router.get(
         .fontSize(16)
         .font("Helvetica-Bold")
         .text(meta.schoolName, { align: "center" });
-      doc.moveDown(0.25);
+      doc.moveDown(0.2);
     }
 
     const subject = meta?.subject || assignment.title;
@@ -102,9 +102,9 @@ router.get(
       doc.fontSize(11).font("Helvetica").text(classLine, { align: "center" });
     }
 
-    doc.moveDown(0.5);
+    doc.moveDown(0.4);
     drawHRule(doc);
-    doc.moveDown(0.5);
+    doc.moveDown(0.35);
 
     // ── TIME + MARKS row ────────────────────────────────────────
     const rowY = doc.y;
@@ -122,18 +122,18 @@ router.get(
         width: pageW / 2,
         align: "right",
       });
-    // Move past the row
-    doc.y = rowY + 18;
-    doc.moveDown(0.4);
+    doc.y = rowY + 16;
 
-    // ── Instructions ────────────────────────────────────────────
+    // ── Instructions (right-aligned, same block as time/marks) ──
     if (meta?.instructions) {
+      doc.moveDown(0.25);
       doc
         .fontSize(9)
         .font("Helvetica-Oblique")
         .text(meta.instructions, { align: "right" });
-      doc.moveDown(0.25);
     }
+
+    doc.moveDown(0.35);
 
     // ── Student fields ──────────────────────────────────────────
     const nameY = doc.y;
@@ -146,11 +146,11 @@ router.get(
       .font("Helvetica")
       .text("Roll No: ____________", L + pageW * 0.6, nameY);
     doc.y = nameY + 14;
-    doc.fontSize(10).font("Helvetica").text(`Date: _______________________`, L);
-    doc.moveDown(0.6);
+    doc.fontSize(10).font("Helvetica").text("Date: _______________________", L);
+    doc.moveDown(0.4);
 
     drawHRule(doc);
-    doc.moveDown(0.8);
+    doc.moveDown(0.7);
 
     // ── SECTIONS ────────────────────────────────────────────────
     let qCounter = 1;
@@ -158,16 +158,22 @@ router.get(
     for (const section of paper.sections) {
       ensureSpace(doc, 60);
 
-      // Section title
+      // Section title — centered, bold
       doc
         .fontSize(13)
         .font("Helvetica-Bold")
         .text(section.title, { align: "center" });
-      doc.moveDown(0.2);
+      doc.moveDown(0.3);
+
+      // Instruction block — LEFT aligned (matches reference image)
+      doc.fontSize(10).font("Helvetica-Bold").text(section.instruction);
+      doc.moveDown(0.1);
       doc
         .fontSize(9)
         .font("Helvetica-Oblique")
-        .text(section.instruction, { align: "center" });
+        .text(
+          `Attempt all questions. Each question carries ${section.questions[0]?.marks ?? 0} marks`,
+        );
       doc.moveDown(0.55);
 
       for (const question of section.questions) {
@@ -176,12 +182,9 @@ router.get(
 
         if (mcq) {
           // ── MCQ ──
-          ensureSpace(doc, 70);
+          ensureSpace(doc, 80);
 
-          // Question stem on one line
-          const stemPrefix = `Q${qCounter}. `;
-          const stemText = `${mcq.questionText}  ${marksLabel}`;
-
+          const stemPrefix = `${qCounter}. [${question.difficulty}] `;
           const prefixW = doc.widthOfString(stemPrefix);
 
           doc
@@ -191,14 +194,23 @@ router.get(
           doc
             .fontSize(11)
             .font("Helvetica")
-            .text(stemText, { width: pageW - prefixW });
+            .text(`${mcq.questionText} `, {
+              continued: true,
+              width: pageW - prefixW,
+            });
+          doc
+            .fontSize(9)
+            .font("Helvetica")
+            .fillColor("#555555")
+            .text(marksLabel, { width: pageW - prefixW });
+          doc.fillColor("#000000");
 
-          doc.moveDown(0.35);
+          doc.moveDown(0.3);
 
-          // Options: 2-column grid
-          const colW = (pageW - 30) / 2;
-          const col1X = L + 18;
-          const col2X = col1X + colW + 12;
+          // 2-column options
+          const colW = (pageW - 40) / 2;
+          const col1X = L + 22;
+          const col2X = col1X + colW + 16;
           const opts = mcq.options;
 
           for (let i = 0; i < opts.length; i += 2) {
@@ -208,7 +220,6 @@ router.get(
             ensureSpace(doc, 20);
             const rowStartY = doc.y;
 
-            // Left option
             if (opt1) {
               doc
                 .fontSize(10)
@@ -219,7 +230,6 @@ router.get(
             }
             const afterLeftY = doc.y;
 
-            // Right option — reset y to rowStartY first
             if (opt2) {
               doc
                 .fontSize(10)
@@ -230,16 +240,15 @@ router.get(
             }
             const afterRightY = doc.y;
 
-            // Advance past whichever column was taller
-            doc.y = Math.max(afterLeftY, afterRightY) + 4;
+            doc.y = Math.max(afterLeftY, afterRightY) + 3;
           }
 
-          doc.moveDown(0.55);
+          doc.moveDown(0.75); // slightly more gap between questions
         } else {
           // ── Non-MCQ ──
           ensureSpace(doc, 40);
 
-          const stemPrefix = `Q${qCounter}. `;
+          const stemPrefix = `${qCounter}. [${question.difficulty}] `;
           const prefixW = doc.widthOfString(stemPrefix);
 
           doc
@@ -249,17 +258,24 @@ router.get(
           doc
             .fontSize(11)
             .font("Helvetica")
-            .text(`${question.text}  ${marksLabel}`, {
+            .text(`${question.text} `, {
+              continued: true,
               width: pageW - prefixW,
             });
+          doc
+            .fontSize(9)
+            .font("Helvetica")
+            .fillColor("#555555")
+            .text(marksLabel, { width: pageW - prefixW });
+          doc.fillColor("#000000");
 
-          doc.moveDown(0.65);
+          doc.moveDown(0.85); // slightly more gap between questions
         }
 
         qCounter++;
       }
 
-      doc.moveDown(0.5);
+      doc.moveDown(0.4);
     }
 
     // ── ANSWER KEY ───────────────────────────────────────────────
@@ -290,7 +306,7 @@ router.get(
           .font("Helvetica")
           .text(question.answer, { width: pageW - prefixW });
 
-        doc.moveDown(0.45);
+        doc.moveDown(0.5);
         aCounter++;
       }
     }
