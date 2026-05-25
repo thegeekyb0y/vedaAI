@@ -23,30 +23,12 @@ app.use(cors({ origin: env.CLIENT_URL }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// DB middleware — MongoDB only, no Redis on every request
-let isConnected = false;
-const middlewareDBCheck = async () => {
-  if (!isConnected) {
-    await connectDB();
-    isConnected = true;
-  }
-};
-
-app.use(async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await middlewareDBCheck();
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
 // Routes
 app.use("/api/assignments", assignmentRoutes);
 app.use("/api", uploadRoutes);
 
 // Health check
-app.get("/health", (req: Request, res: Response) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
 });
 
@@ -57,33 +39,22 @@ io.on("connection", (socket) => {
   });
 });
 
-// Error handler — must be after routes
+// Error handler — must be last
 app.use(errorHandler);
 
-// Worker — only in non-production or when explicitly enabled
-if (
-  process.env.NODE_ENV !== "production" ||
-  process.env.RUN_ASSIGNMENT_WORKER === "true"
-) {
+// Worker — only when explicitly enabled via env flag
+if (process.env.RUN_ASSIGNMENT_WORKER === "true") {
   void import("./queues/assignmentWorker");
 }
 
-// Local dev HTTP listener
-if (process.env.NODE_ENV !== "production") {
-  const start = async () => {
-    await connectDB();
-    try {
-      const { redis } = await import("./config/redis");
-      await redis.ping();
-      console.log("Redis connection established.");
-    } catch (err) {
-      console.error("Redis warning:", err);
-    }
-    httpServer.listen(env.PORT, () => {
-      console.log(`Server running on port ${env.PORT}`);
-    });
-  };
-  void start();
-}
+// ✅ Unconditional — binds on 0.0.0.0 for Render
+const start = async () => {
+  await connectDB();
+  httpServer.listen(parseInt(env.PORT, 10), "0.0.0.0", () => {
+    console.log(`Server running on port ${env.PORT}`);
+  });
+};
+
+void start();
 
 export default app;

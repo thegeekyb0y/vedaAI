@@ -6,7 +6,7 @@ type ApiErrorPayload = {
 };
 
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "/_/backend", // ADD fallback
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
 export const getApiErrorMessage = (
@@ -16,11 +16,7 @@ export const getApiErrorMessage = (
   if (axios.isAxiosError<ApiErrorPayload>(error)) {
     return error.response?.data?.message ?? error.message ?? fallback;
   }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
+  if (error instanceof Error) return error.message;
   return fallback;
 };
 
