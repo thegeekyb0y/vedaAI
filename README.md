@@ -2,6 +2,9 @@
 
 > Generate professional, print-ready exam question papers in seconds using AI. Built for educators.
 
+<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/4ecd48c5-8a5b-4e97-8a28-cc52c351eb5b" />
+
+
 ---
 
 ## Table of Contents
@@ -34,33 +37,8 @@ VedaAI lets teachers create fully-structured exam papers by specifying a subject
 ---
 
 ## Architecture
+<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/10401df4-9530-4592-902e-162e26d89350" />
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        CLIENT (Next.js)                      │
-│                                                             │
-│  Create Form → REST API call → Poll / Socket listener       │
-│       ↓                              ↑                      │
-│  Assignment Detail Page      job:status event (Socket.IO)   │
-└──────────────────────┬──────────────────────────────────────┘
-                       │ HTTP / WebSocket
-┌──────────────────────▼──────────────────────────────────────┐
-│                     BACKEND (Express + TypeScript)           │
-│                                                             │
-│  Routes → asyncHandler → Mongoose (MongoDB)                 │
-│       ↓                                                     │
-│  BullMQ Queue (Redis) ──► Worker Process                    │
-│                                  ↓                          │
-│                          Groq API (LLaMA 3.3 70B)           │
-│                                  ↓                          │
-│                     Assignment saved → Socket.IO emit       │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-          ┌────────────┴────────────┐
-          │                         │
-     MongoDB Atlas              Redis (BullMQ)
-   (Assignments store)       (Job queue + state)
-```
 
 ### Worker Separation
 
