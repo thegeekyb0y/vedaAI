@@ -144,17 +144,17 @@ router.get(
     for (const section of paper.sections) {
       ensureSpace(doc, 60);
 
-      // Section title
+      // Section title — LEFT aligned, pinned to left margin
       doc
         .fontSize(13)
         .font("Helvetica-Bold")
-        .text(section.title, { align: "center" });
-      doc.moveDown(0.2);
+        .text(section.title, L, doc.y, { width: pageW, align: "left" });
+      doc.moveDown(0.25);
       doc
         .fontSize(9)
         .font("Helvetica-Oblique")
-        .text(section.instruction, { align: "center" });
-      doc.moveDown(0.55);
+        .text(section.instruction, L, doc.y, { width: pageW, align: "left" });
+      doc.moveDown(0.7);
 
       for (const question of section.questions) {
         const mcq = parseMCQOptions(question.text);
@@ -164,10 +164,8 @@ router.get(
           // ── MCQ ──
           ensureSpace(doc, 70);
 
-          // Question stem on one line
           const stemPrefix = `Q${qCounter}. `;
           const stemText = `${mcq.questionText}  ${marksLabel}`;
-
           const prefixW = doc.widthOfString(stemPrefix);
 
           doc
@@ -179,9 +177,8 @@ router.get(
             .font("Helvetica")
             .text(stemText, { width: pageW - prefixW });
 
-          doc.moveDown(0.35);
+          doc.moveDown(0.4);
 
-          // Options: 2-column grid
           const colW = (pageW - 30) / 2;
           const col1X = L + 18;
           const col2X = col1X + colW + 12;
@@ -194,7 +191,6 @@ router.get(
             ensureSpace(doc, 20);
             const rowStartY = doc.y;
 
-            // Left option
             if (opt1) {
               doc
                 .fontSize(10)
@@ -205,7 +201,6 @@ router.get(
             }
             const afterLeftY = doc.y;
 
-            // Right option — reset y to rowStartY first
             if (opt2) {
               doc
                 .fontSize(10)
@@ -216,11 +211,10 @@ router.get(
             }
             const afterRightY = doc.y;
 
-            // Advance past whichever column was taller
             doc.y = Math.max(afterLeftY, afterRightY) + 4;
           }
 
-          doc.moveDown(0.55);
+          doc.moveDown(0.85); // ✅ was 0.55
         } else {
           // ── Non-MCQ ──
           ensureSpace(doc, 40);
@@ -239,7 +233,7 @@ router.get(
               width: pageW - prefixW,
             });
 
-          doc.moveDown(0.65);
+          doc.moveDown(0.9); // ✅ was 0.65
         }
 
         qCounter++;
