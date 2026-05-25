@@ -102,8 +102,9 @@ ${typesList}
 
 Rules:
 - Every question MUST be directly relevant to the topic above. Never go off-topic.
-- For "Multiple Choice Questions": embed exactly 4 options inside the text field on new lines using this exact format:
-  "Question stem here?\n(a) First option\n(b) Second option\n(c) Third option\n(d) Fourth option"
+- - For "Multiple Choice Questions": embed exactly 4 options inside the text field on new lines using this exact format:
+    "Question stem here?\n(a) First option\n(b) Second option\n(c) Third option\n(d) Fourth option"
+    IMPORTANT: Do NOT double-label the options (e.g., never write "(a) A) Option").
   The answer field must state the correct option and briefly explain why, e.g. "(b) Photosystem II — because it contains the oxygen-evolving complex."
 - For all other question types: text is just the question, answer is a clear 2–3 sentence explanation.
 - Use EXACTLY the field names: sections, title, instruction, questions, text, difficulty, marks, answer

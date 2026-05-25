@@ -20,7 +20,8 @@ function parseMCQOptions(text: string): MCQParsed | null {
     questionText,
     options: matches.map((m) => ({
       label: (m[1] ?? "").toUpperCase(),
-      text: (m[2] ?? "").trim(),
+      // NEW: strip stray labels like "A) " or "a. " from the start of the text
+      text: (m[2] ?? "").replace(/^[a-d][.)]\s*/i, "").trim(),
     })),
   };
 }
