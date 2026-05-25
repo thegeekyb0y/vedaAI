@@ -14,34 +14,63 @@ import {
 } from "@/features/assignments/api";
 import { isAssignmentActive } from "@/features/assignments/utils";
 import { getApiErrorMessage } from "@/lib/api";
+import { useAssignmentStore } from "@/store/assignmentStore";
+import { useAssignmentSocket } from "@/hooks/useAssignmentSocket";
 import { IAssignment } from "@/types/assignment.types";
 
 export default function AssignmentDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [assignment, setAssignment] = useState<IAssignment | null>(null);
-  const [loading, setLoading] = useState(true);
+  const assignmentId = params.id;
+
+  const { upsertAssignment, updateAssignmentStatus } = useAssignmentStore();
+
+  // Derive current assignment from store
+  const storeAssignment = useAssignmentStore((s) =>
+    s.assignments.find((a) => a._id === assignmentId),
+  );
+
+  const [localAssignment, setLocalAssignment] = useState<IAssignment | null>(
+    storeAssignment ?? null,
+  );
+  const [loading, setLoading] = useState(!storeAssignment);
   const [error, setError] = useState<string | null>(null);
   const [regenerating, setRegenerating] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const assignmentId = params.id;
+  // Keep local state in sync when store updates (socket pushes)
+  useEffect(() => {
+    if (storeAssignment) {
+      setLocalAssignment(storeAssignment);
+    }
+  }, [storeAssignment]);
+
+  // Socket — only subscribe when assignment is active
+  const socketId =
+    localAssignment && isAssignmentActive(localAssignment.status)
+      ? assignmentId
+      : null;
+  useAssignmentSocket(socketId);
 
   const fetchAssignment = useCallback(async () => {
     const next = await getAssignmentById(assignmentId);
-    setAssignment(next);
+    upsertAssignment(next);
+    setLocalAssignment(next);
     setError(null);
     return next;
-  }, [assignmentId]);
+  }, [assignmentId, upsertAssignment]);
 
+  // Initial load (skip if already in store)
   useEffect(() => {
-    let isMounted = true;
+    if (storeAssignment) return;
 
+    let isMounted = true;
     const load = async () => {
       try {
         const next = await getAssignmentById(assignmentId);
         if (!isMounted) return;
-        setAssignment(next);
+        upsertAssignment(next);
+        setLocalAssignment(next);
         setError(null);
       } catch (err) {
         if (!isMounted) return;
@@ -50,15 +79,20 @@ export default function AssignmentDetailPage() {
         if (isMounted) setLoading(false);
       }
     };
-
     void load();
     return () => {
       isMounted = false;
     };
-  }, [assignmentId]);
+  }, [assignmentId, storeAssignment, upsertAssignment]);
 
+  // Clear loading once we have data from store
   useEffect(() => {
-    if (!assignment || !isAssignmentActive(assignment.status)) return;
+    if (storeAssignment && loading) setLoading(false);
+  }, [storeAssignment, loading]);
+
+  // Polling fallback — only runs if socket hasn't already resolved it
+  useEffect(() => {
+    if (!localAssignment || !isAssignmentActive(localAssignment.status)) return;
 
     const poll = async () => {
       try {
@@ -75,10 +109,10 @@ export default function AssignmentDetailPage() {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [assignment, fetchAssignment]);
+  }, [localAssignment?.status, fetchAssignment]);
 
   const statusText = useMemo(() => {
-    switch (assignment?.status) {
+    switch (localAssignment?.status) {
       case "pending":
         return "Assignment queued. We are preparing your generation job.";
       case "processing":
@@ -90,13 +124,14 @@ export default function AssignmentDetailPage() {
       default:
         return "Loading assignment details.";
     }
-  }, [assignment?.status]);
+  }, [localAssignment?.status]);
 
   const handleRegenerate = async () => {
     setRegenerating(true);
     try {
       const next = await regenerateAssignment(assignmentId);
-      setAssignment(next);
+      upsertAssignment(next);
+      setLocalAssignment(next);
       toast.success("Assignment queued for regeneration");
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to regenerate assignment"));
@@ -124,7 +159,7 @@ export default function AssignmentDetailPage() {
     );
   }
 
-  if (error || !assignment) {
+  if (error || !localAssignment) {
     return (
       <section className="mx-auto max-w-3xl rounded-[34px] border border-rose-200 bg-white p-8 text-center shadow-[var(--shadow-card)]">
         <h1 className="text-2xl font-semibold text-primary">
@@ -146,11 +181,11 @@ export default function AssignmentDetailPage() {
     );
   }
 
-  const isActive = isAssignmentActive(assignment.status);
+  const isActive = isAssignmentActive(localAssignment.status);
 
   return (
     <div className="mx-auto max-w-[1100px] space-y-5">
-      {/* Status bar — always visible on screen, hidden on print */}
+      {/* Status bar */}
       <section className="print:hidden rounded-[28px] bg-white px-6 py-5 shadow-[var(--shadow-card)]">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <p className="text-[15px] font-medium text-secondary">{statusText}</p>
@@ -185,7 +220,7 @@ export default function AssignmentDetailPage() {
       )}
 
       {/* Failed state */}
-      {assignment.status === "failed" && (
+      {localAssignment.status === "failed" && (
         <section className="rounded-[34px] border border-rose-200 bg-white p-8 shadow-[var(--shadow-card)] sm:p-10">
           <div className="mx-auto max-w-xl text-center">
             <h2 className="text-2xl font-semibold text-primary">
@@ -208,8 +243,8 @@ export default function AssignmentDetailPage() {
       )}
 
       {/* Paper */}
-      {assignment.status === "done" && assignment.result && (
-        <AssignmentPaper assignment={assignment} />
+      {localAssignment.status === "done" && localAssignment.result && (
+        <AssignmentPaper assignment={localAssignment} />
       )}
     </div>
   );

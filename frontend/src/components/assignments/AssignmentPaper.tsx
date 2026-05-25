@@ -154,7 +154,7 @@ export const AssignmentPaper = ({ assignment }: AssignmentPaperProps) => {
         {/* Answer key */}
         <section className="mt-14">
           <h3 className="text-[28px] font-semibold text-primary">Answer Key</h3>
-          <ol className="mt-6 space-y-4 pl-6 marker:text-primary">
+          <ol className="mt-6 space-y-4 list-decimal pl-6 marker:text-primary">
             {paper.sections
               .flatMap((s) => s.questions)
               .map((question, index) => (

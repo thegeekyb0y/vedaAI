@@ -2,13 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Filter,
-  Plus,
-  RefreshCcw,
-  Search,
-  SlidersHorizontal,
-} from "lucide-react";
+import { Filter, Plus, RefreshCcw, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { AssignmentCard } from "@/components/assignments/AssignmentCard";
 import { AssignmentsListSkeleton } from "@/components/assignments/AssignmentsListSkeleton";
@@ -20,11 +14,12 @@ import {
   getAssignments,
   regenerateAssignment,
 } from "@/features/assignments/api";
-import { IAssignment } from "@/types/assignment.types";
+import { useAssignmentStore } from "@/store/assignmentStore";
 
 export default function AssignmentsPage() {
   const router = useRouter();
-  const [assignments, setAssignments] = useState<IAssignment[]>([]);
+  const { assignments, setAssignments, removeAssignment, upsertAssignment } =
+    useAssignmentStore();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -64,7 +59,7 @@ export default function AssignmentsPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [setAssignments]);
 
   const filteredAssignments = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -75,7 +70,7 @@ export default function AssignmentsPage() {
   const handleDelete = async (id: string) => {
     try {
       await deleteAssignment(id);
-      setAssignments((curr) => curr.filter((item) => item._id !== id));
+      removeAssignment(id);
       toast.success("Assignment deleted");
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to delete assignment"));
@@ -85,9 +80,7 @@ export default function AssignmentsPage() {
   const handleRegenerate = async (id: string) => {
     try {
       const next = await regenerateAssignment(id);
-      setAssignments((curr) =>
-        curr.map((item) => (item._id === id ? next : item)),
-      );
+      upsertAssignment(next);
       toast.success("Assignment queued for regeneration");
     } catch (err) {
       toast.error(getApiErrorMessage(err, "Failed to regenerate assignment"));

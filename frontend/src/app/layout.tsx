@@ -5,6 +5,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Toaster } from "react-hot-toast";
 import { Topbar } from "@/components/layout/TopBar";
+import { Analytics } from "@vercel/analytics/react";
 
 const bricolage = localFont({
   src: "./fonts/BricolageGrotesqueLatin.woff2",
@@ -41,6 +42,7 @@ export default function RootLayout({
           </main>
         </div>
         <Toaster position="top-right" />
+        <Analytics />
       </body>
     </html>
   );
